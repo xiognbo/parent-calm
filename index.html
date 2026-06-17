@@ -1657,6 +1657,11 @@ body {
               <div class="debug-row"><span>🪟 窗口帧数</span><span id="dbgWinSize">0</span></div>
             </div>
             <div class="debug-section">
+              <div class="debug-section-title">🧠 自适应学习 (V5)</div>
+              <div class="debug-row"><span>个人偏置 Personal Bias</span><span id="dbgBias">0.00</span></div>
+              <div class="debug-row"><span>发火后上下文</span><span id="dbgContext">—</span></div>
+            </div>
+            <div class="debug-section">
               <div class="debug-section-title">🎯 综合评分</div>
               <div class="debug-row"><span>怒值 Score</span><span id="dbgScore" class="debug-val-high">0</span></div>
               <div class="debug-row"><span>模型概率</span><span id="dbgProb">0%</span></div>
@@ -2783,6 +2788,9 @@ let lightAlertActive = false; // Level-1 light alert active
 let heavyAlertActive = false; // Level-2 heavy alert active
 let currentOverlayType = 'none'; // 'none' | 'layer1' | 'cold'
 let feedbackSamples = [];     // collected feedback for adaptive learning
+let lastBaselineUpdate = 0;  // timestamp of last adaptive baseline recalibration
+let lastAngerEventTime = 0;  // timestamp of last confirmed anger event (for context-sensitive threshold)
+let personalBiasOffset = 0;  // cumulative bias adjustment from user feedback (-0.5 ~ +0.5)
 let lightZoneStart = 0;     // Level-1 trigger start timestamp
 let lightZoneTimer = null;    // Level-1 trigger timer
 let heavyZoneStart = 0;      // Level-2 trigger start timestamp  
@@ -2956,6 +2964,15 @@ async function init() {
 
   // Load streak from DB into cache for fast UI access
   _streakCache = await updateStreakToday();
+
+  // ── V5: Restore adaptive learning state from localStorage ──
+  try {
+    const saved = localStorage.getItem('pc_personal_bias');
+    if (saved !== null) personalBiasOffset = parseFloat(saved);
+    const savedAnger = localStorage.getItem('pc_last_anger');
+    if (savedAnger !== null) lastAngerEventTime = parseInt(savedAnger);
+    console.log('🎯 V5: 恢复自适应状态 bias=' + personalBiasOffset.toFixed(2) + ' lastAnger=' + new Date(lastAngerEventTime).toLocaleTimeString());
+  } catch(e) {}
 
   updateGreeting();
   updateStreakDisplaySync();
@@ -3243,7 +3260,7 @@ async function calibrateVoicePipeline() {
   isCalibrating = true;
   calibSamples = [];
   calibThresholds = null;
-  const duration = 8000; // 8 seconds
+  const duration = 20000; // 20 seconds — V5: longer calibration for more robust baseline
   const startTime = Date.now();
   const elProgress = document.getElementById('calibProgress');
   const elCountdown = document.getElementById('calibCountdown');
@@ -3540,17 +3557,43 @@ function updateDebugValues(vol, pitch, cent, zcr, rate, score, dims, dimsOver, h
   }
   const elWinSize = document.getElementById('dbgWinSize');
   if (elWinSize) elWinSize.textContent = frameHistory.length;
+
+  // ── V5: Adaptive learning display ──
+  const elBias = document.getElementById('dbgBias');
+  if (elBias) {
+    elBias.textContent = personalBiasOffset.toFixed(2);
+    elBias.style.color = personalBiasOffset < -0.5 ? '#6BCB77' : personalBiasOffset > 0.5 ? '#FF6B6B' : '#FFD93D';
+  }
+  const elContext = document.getElementById('dbgContext');
+  if (elContext) {
+    if (lastAngerEventTime > 0) {
+      const minSince = Math.round((Date.now() - lastAngerEventTime) / 60000);
+      if (minSince < 30) {
+        elContext.textContent = '发火后 ' + minSince + '分钟（阈值↓）';
+        elContext.style.color = '#FF6B6B';
+      } else {
+        elContext.textContent = '已恢复（>30分钟）';
+        elContext.style.color = '#6BCB77';
+      }
+    } else {
+      elContext.textContent = '无记录';
+      elContext.style.color = '';
+    }
+  }
 }
 
 function resetThresholds() {
   calibThresholds = null;
   calibBaseline = null;
+  personalBiasOffset = 0;
+  lastAngerEventTime = 0;
+  try { localStorage.removeItem('pc_personal_bias'); localStorage.removeItem('pc_last_anger'); } catch(e) {}
   showToast('已重置为默认模型');
 }
 
 function exportDebugData() {
   const data = {
-    model: 'logit-v4',
+    model: 'logit-v5',
     prob: Math.round(angerProb * 1000) / 10,
     features: {
       vol: Math.round(smoothVolume),
@@ -3561,6 +3604,8 @@ function exportDebugData() {
     },
     calibrated: !!calibThresholds,
     baseline: calibBaseline || { vol: 40, pitch: 0.18, cent: 0.14, zcr: 0.12 },
+    personalBias: personalBiasOffset,
+    lastAngerEvent: lastAngerEventTime ? new Date(lastAngerEventTime).toISOString() : null,
     note: '模型输出供反馈优化'
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -3702,12 +3747,13 @@ function spectralFlatness(freqData) {
 // TF-like micro anger logit model — V4
 // Input: EMA features + spectral features + temporal window stats
 // V3 base: strict voice gate on all dims, vg² on cross terms
-// V4 additions:
-//   3 new spectral features (flux/rolloff/flatness) — enrich single-frame picture
-//   3 temporal stats (pitchTrend/volStd/harmMin) from 1.5s window — distinguish anger trajectory from noise spike
-//   All new terms gated via voiceGate to prevent noise contamination
-//   Bias adjusted to keep baseline ~0.12
-function computeAngerLogit(vol, pitch, cent, zcr, rate, harmonicity, flux, rolloff, flatness, temporalStats) {
+// V5: Rebalanced weights (-20% linear, -30% temporal), deeper bias (-8.0)
+//     Adaptive learning: personalBias from user feedback, context-sensitive threshold
+//     Extended calibration (20s), silent adaptive baseline EMA
+// V5 additions:
+//   personalBias — cumulative user feedback adjustment (negative=less sensitive, positive=more sensitive)
+//   context bias injected from monitorLoop (post-anger window)
+function computeAngerLogit(vol, pitch, cent, zcr, rate, harmonicity, flux, rolloff, flatness, temporalStats, personalBias) {
   // --- Feature normalization against baseline ---
   const b = calibBaseline || { vol: 40, pitch: 0.18, cent: 0.14, zcr: 0.12 };
   const vr = vol / Math.max(b.vol, 1);     // volume ratio
@@ -3742,45 +3788,54 @@ function computeAngerLogit(vol, pitch, cent, zcr, rate, harmonicity, flux, rollo
   }
 
   // --- Logit: linear terms + synergy interactions ---
-  // V4: voiceGate applied to ALL linear terms
-  // New terms: flux (rapid spectral change), rolloff (high-freq shift), flatness (tonality)
-  // Temporal: pitchTrend (rising=anger), volVolatility (erratic=anger), harmMin (voice quality)
+  // V5: Reduced linear weights (-20%) — single dim shouldn't trigger alone
+  //     Reduced temporal weights (-30%) — trajectory only amplifies confirmed voice
+  //     Interaction terms kept — multi-dim co-occurrence is the strongest signal
+  //     Bias deeper (-8.0) — baseline prob lower, needs more evidence to fire
   const crossVolPitch  = Math.max(0, vr - 1.3) * Math.max(0, pr - 1.3) * 3.0 * vg2;
   const crossVolCent   = Math.max(0, vr - 1.3) * Math.max(0, cr - 1.3) * 0.5 * vg2;
   const crossPitchZcr  = Math.max(0, pr - 1.3) * Math.max(0, zr - 1.3) * 0.4 * vg2;
   const crossVolRate   = Math.max(0, vr - 1.3) * Math.max(0, rr - 1.3) * 0.3 * vg2;
 
-  // Linear terms (all gated)
+  // Linear terms (all gated, V5 reduced weights)
   let logit =
-    vr * 1.2 * voiceGate +       // volume
-    pr * 1.2 * voiceGate +       // pitch
-    cr * 0.7 * voiceGate +       // centroid
-    zr * 0.6 * voiceGate +       // zcr
-    rr * 0.5 * voiceGate +       // rate
+    vr * 1.0 * voiceGate +       // volume (was 1.2)
+    pr * 1.0 * voiceGate +       // pitch (was 1.2)
+    cr * 0.5 * voiceGate +       // centroid (was 0.7)
+    zr * 0.5 * voiceGate +       // zcr (was 0.6)
+    rr * 0.4 * voiceGate +       // rate (was 0.5)
 
-    // -- V4: New spectral terms --
-    fr * 0.6 * voiceGate +       // spectral flux: anger = rapid spectrum changes
-    ror * 0.4 * voiceGate +      // spectral rolloff: anger = brighter/higher-freq
-    (1.0 - flr) * 0.5 * voiceGate +  // inverted flatness: tonal=high, noise=low
+    // -- V5: Spectral terms (reduced weights) --
+    fr * 0.4 * voiceGate +       // spectral flux (was 0.6)
+    ror * 0.3 * voiceGate +      // spectral rolloff (was 0.4)
+    (1.0 - flr) * 0.4 * voiceGate +  // inverted flatness (was 0.5)
 
-    // -- V4: Temporal terms (voice gate squared — trajectory only matters for voice) --
-    Math.max(0, pitchTrend - 1.0) * 2.5 * vg2 +   // rising pitch → strong anger signal
-    volVolatility * 2.0 * vg2 +                    // erratic volume → anger
-    Math.max(0, 0.4 - harmMin) * 1.5 * vg2 +      // voice quality degradation
+    // -- V5: Temporal terms (reduced weights, higher threshold for trajectory) --
+    Math.max(0, pitchTrend - 1.1) * 1.8 * vg2 +   // rising pitch (was 1.0 threshold, 2.5 weight)
+    volVolatility * 1.5 * vg2 +                    // erratic volume (was 2.0)
+    Math.max(0, 0.35 - harmMin) * 1.2 * vg2 +     // voice quality degradation (was 0.4 threshold, 1.5 weight)
 
-    // Interaction terms (vg2 penalty)
+    // Interaction terms (vg2 penalty, unchanged — multi-dim co-occurrence is the gold signal)
     crossVolPitch +
     crossVolCent +
     crossPitchZcr +
     crossVolRate -
-    7.5;                         // adjusted bias: 9 linear terms + 3 temporal → ~7.5
+    8.0;                         // V5 deeper bias: needs more evidence to fire (was 7.5)
 
-  // --- TRANSIENT SUPPRESSION ---
+  // --- V5 TRANSIENT SUPPRESSION: tighter clamp ---
+  // Non-voiced elevated prob → harder cap (0.12 instead of 0.18)
   if (harm < 0.28) {
     var rawProb = 1.0 / (1.0 + Math.exp(-logit));
-    if (rawProb > 0.35) {
-      return Math.min(rawProb * 0.15, 0.18);
+    if (rawProb > 0.30) {
+      return Math.min(rawProb * 0.10, 0.12);
     }
+  }
+
+  // --- V5: Personal bias from user feedback ---
+  // Negative bias = user says we over-trigger → make model less sensitive
+  // Positive bias = user says we miss anger → make model more sensitive
+  if (personalBias) {
+    logit += personalBias;
   }
 
   return 1.0 / (1.0 + Math.exp(-logit));
@@ -3908,10 +3963,33 @@ function monitorLoop() {
     temporalStats = { pitchTrend, volVolatility, harmMin };
   }
 
-  // --- V4: anger probability (with temporal+spectral features) ---
+  // ── V5: Adaptive baseline — silently recalibrate every 30 minutes ──
+  // During normal monitoring (not anger), accumulate background samples
+  // Every 30 min, merge into baseline using weighted EMA
+  if (temporalStats && angerProb < 0.25 && harm > 0.40) {
+    // Low-anger, voiced frame → good baseline sample
+    if (!calibBaseline) calibBaseline = { vol: 40, pitch: 0.18, cent: 0.14, zcr: 0.12 };
+    const alpha = 0.05; // slow EMA: 5% new, 95% old
+    calibBaseline.vol = calibBaseline.vol * (1 - alpha) + smoothVolume * alpha;
+    calibBaseline.pitch = calibBaseline.pitch * (1 - alpha) + smoothPitch * alpha;
+    calibBaseline.cent = calibBaseline.cent * (1 - alpha) + smoothCentroid * alpha;
+    calibBaseline.zcr = calibBaseline.zcr * (1 - alpha) + smoothZCR * alpha;
+    lastBaselineUpdate = now;
+  }
+
+  // ── V5: Context-sensitive threshold — 30 min after anger, lower threshold ──
+  var contextBiasAdjust = 0;
+  if (lastAngerEventTime > 0 && (now - lastAngerEventTime) < 30 * 60 * 1000) {
+    // Post-anger window: user is more volatile, lower detection threshold by ~20%
+    const minutesSinceAnger = (now - lastAngerEventTime) / 60000;
+    const decay = Math.max(0, 1 - minutesSinceAnger / 30); // linear decay over 30 min
+    contextBiasAdjust = 1.5 * decay; // add up to 1.5 to logit (makes prob jump ~15%)
+  }
+
+  // --- V5: anger probability (with temporal+spectral features + personal bias) ---
   angerProb = computeAngerLogit(
     smoothVolume, smoothPitch, smoothCentroid, smoothZCR, smoothRate, smoothHarmonicity,
-    smoothFlux, smoothRolloff, smoothFlatness, temporalStats
+    smoothFlux, smoothRolloff, smoothFlatness, temporalStats, personalBiasOffset + contextBiasAdjust
   );
   _lastAngerProb = angerProb;  // cache for joint scoring with semantic channel
   angerScore = probToScore(angerProb);
@@ -5134,6 +5212,10 @@ function onDebugConfirm() {
   if (ov) ov.remove();
   lightAlertActive = false;
   currentOverlayType = 'none';
+
+  // ── V5: Record true positive for context-sensitive threshold ──
+  logFeedback(source === 'cold' ? 2 : 1, 'true_positive');
+
   // Route to Layer 2 with source-specific type
   const escalateType = source === 'cold' ? 'cold_violence_confirmed' : 'layer1_confirmed';
   setTimeout(() => triggerHeavyAlert(escalateType), 300);
@@ -5149,6 +5231,10 @@ function onDebugCancel() {
   lightAlertActive = false;
   currentOverlayType = 'none';
   console.log('用户点了误判, 触发源:', source);
+
+  // ── V5: Record false positive feedback for adaptive learning ──
+  logFeedback(source === 'cold' ? 2 : 1, 'false_positive');
+
   // 冷暴力界面关闭后启动冷静窗口
   if (source === 'cold') {
     _dismissStartCalmWindow();
@@ -5265,13 +5351,27 @@ async function logFeedback(layer, action) {
   };
   await dbPut('feedback_events', evt);
 
-  // Adaptive learning: adjust thresholds based on feedback
-  if (action === 'false_positive' && calibThresholds) {
-    // User said "no anger" but we triggered — relax thresholds slightly
-    calibThresholds.vol = Math.max(30, calibThresholds.vol * 0.95);
-    calibThresholds.pitch = Math.max(0.10, calibThresholds.pitch * 0.95);
-    console.log('🎯 自适应调整：降低阈值（用户反馈：误报）', calibThresholds);
+  // ── V5: Adaptive learning with personalBias ──
+  // false_positive: user says "this isn't anger" → make model LESS sensitive
+  // false_negative: user says "you missed it" → make model MORE sensitive
+  // true_positive: user confirms anger → record timestamp for context-sensitive threshold
+  if (action === 'false_positive') {
+    // Reduce sensitivity: shift bias negative (max cumulative -2.0)
+    personalBiasOffset = Math.max(-2.0, personalBiasOffset - 0.3);
+    console.log('🎯 V5自适应：降低敏感度（用户反馈：误报） bias=' + personalBiasOffset.toFixed(2));
+  } else if (action === 'false_negative') {
+    // Increase sensitivity: shift bias positive (max cumulative +2.0)
+    personalBiasOffset = Math.min(2.0, personalBiasOffset + 0.3);
+    console.log('🎯 V5自适应：提高敏感度（用户反馈：漏报） bias=' + personalBiasOffset.toFixed(2));
+  } else if (action === 'true_positive') {
+    // Record anger time for context-sensitive threshold
+    lastAngerEventTime = Date.now();
+    console.log('🎯 V5：记录发火时间，30分钟内阈值自动降低');
   }
+
+  // Persist personalBias to localStorage for cross-session continuity
+  try { localStorage.setItem('pc_personal_bias', personalBiasOffset); } catch(e) {}
+  try { localStorage.setItem('pc_last_anger', lastAngerEventTime); } catch(e) {}
 }
 
 /* ========== CLOUD ASR (异步语义校验) ========== */
