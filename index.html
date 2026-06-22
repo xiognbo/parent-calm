@@ -2841,6 +2841,12 @@ const ASR_CONFIG = {
     { kw: '烦死了', score: 2, cold: false },
     { kw: '烦不烦', score: 2, cold: false },
     { kw: '你干嘛', score: 2, cold: false },
+    { kw: '你想干', score: 2, cold: false },
+    { kw: '你有病吧', score: 2, cold: false },
+    { kw: '你有意思吗', score: 2, cold: false },
+    { kw: '讲不讲理', score: 2, cold: false },
+    { kw: '你到底想怎样', score: 2, cold: false },
+    { kw: '你再说一遍', score: 2, cold: false },
     { kw: '你再说', score: 2, cold: false },
     { kw: '再说一遍', score: 2, cold: false },
     { kw: '气死我了', score: 2, cold: false },
@@ -2884,9 +2890,14 @@ const ASR_CONFIG = {
     { kw: '不要你了', score: 3, cold: true },
     { kw: '我不要你了', score: 3, cold: true },
     { kw: '你走吧', score: 2, cold: true },
+    { kw: '你走开', score: 2, cold: false },
     { kw: '滚一边去', score: 3, cold: false },
     { kw: '走开', score: 2, cold: false },
     { kw: '离我远点', score: 2, cold: false },
+    { kw: '别管我', score: 2, cold: true },
+    { kw: '别来烦我', score: 2, cold: true },
+    { kw: '看见你就烦', score: 2, cold: true },
+    { kw: '真烦人', score: 2, cold: true },
     { kw: '你爱哭不哭', score: 2, cold: true },
     { kw: '你哭也没用', score: 2, cold: true },
     { kw: '我数到三', score: 2, cold: false },
@@ -2899,9 +2910,20 @@ const ASR_CONFIG = {
     { kw: '你再不', score: 1, cold: false },
     { kw: '你再这样', score: 1, cold: false },
     { kw: '最后一次', score: 1, cold: false },
+    { kw: '你试试', score: 2, cold: false },
+    { kw: '你给我试试', score: 2, cold: false },
+    { kw: '看我揍不揍', score: 3, cold: false },
+    { kw: '信我揍你', score: 3, cold: false },
   ],
-  // Negation words — if these appear within 3 chars before a keyword, skip it
-  negationPrefixes: ['不', '别', '没', '不要', '不会', '不能', '不可能', '才不'],
+  // Negation words — if these appear within 8 chars before a keyword, skip it
+  // Extended: covers more negation patterns in Chinese
+  negationPrefixes: [
+    '不', '别', '没', '没有', '不要', '不会', '不能', '不可能', '才不',
+    '不用', '不必', '不需', '不需要', '不至于', '不是', '不对',
+    '没那么', '没那么', '没这么', '没那', '又不是', '又没',
+    '干嘛要', '干嘛得', '谁要', '谁想', '我才',
+    'dont', 'don\'t', 'no'  // English negation support
+  ],
   // Trigger thresholds
   triggerThreshold: 3,       // total score >= this triggers alert
   coldThreshold: 2,          // cold-violence score >= this triggers cold override
@@ -4264,7 +4286,7 @@ class WebSpeechASR extends ASRProviderBase {
     this._rec.lang = config.lang || 'zh-CN';
     this._rec.interimResults = config.interimResults !== false;
     this._rec.continuous = config.continuous !== false;
-    this._rec.maxAlternatives = config.maxAlternatives || 1;
+    this._rec.maxAlternatives = config.maxAlternatives || 3;
     const self = this;
     this._rec.onresult = (e) => { if (self.onresult) self.onresult(e); };
     this._rec.onerror = (e) => { if (self.onerror) self.onerror(e); };
@@ -4657,7 +4679,7 @@ function _startRecognition() {
     lang: 'zh-CN',
     interimResults: true,
     continuous: false,
-    maxAlternatives: 1,
+    maxAlternatives: 3,
   });
   console.log('🎤 语义通道: 使用 ASR 提供商 =', actualProvider, '(配置=', ASR_PROVIDER_TYPE, ')');
 
@@ -4667,7 +4689,26 @@ function _startRecognition() {
     _asrResultCount++;
     _asrLastResultTime = Date.now();
     for (let i = event.resultIndex; i < event.results.length; i++) {
-      const text = event.results[i][0].transcript.trim();
+      if (!event.results[i].isFinal && !event.results[i][0].transcript) continue;
+      // 多候选处理：遍历所有候选，取置信度最高的
+      let bestText = '';
+      let bestConfidence = 0;
+      const altCount = event.results[i].length || 1;
+      for (let a = 0; a < Math.min(altCount, 3); a++) {
+        const alt = event.results[i][a];
+        if (!alt || !alt.transcript) continue;
+        const conf = alt.confidence || 0;
+        if (conf > bestConfidence) {
+          bestConfidence = conf;
+          bestText = alt.transcript.trim();
+        }
+      }
+      // 置信度过滤：低于 0.6 的结果丢弃
+      if (bestConfidence > 0 && bestConfidence < 0.6) {
+        console.log('🎤 置信度太低，丢弃:', bestConfidence, bestText);
+        continue;
+      }
+      const text = bestText || event.results[i][0].transcript.trim();
       if (!text) continue;
       semanticLastResult = text;
       _asrLastResultText = text;
@@ -5459,10 +5500,22 @@ function tryWebSpeechASR() {
     const recognition = new SR();
     recognition.lang = 'zh-CN';
     recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
+    recognition.maxAlternatives = 3;
     recognition.continuous = false;
     const timeout = setTimeout(() => { recognition.stop(); reject(new Error('Speech recognition timeout')); }, 5000);
-    recognition.onresult = (event) => { clearTimeout(timeout); const text = event.results[0][0].transcript.trim(); resolve(text); };
+    recognition.onresult = (event) => {
+      clearTimeout(timeout);
+      // 多候选：取置信度最高的
+      let bestText = '';
+      let bestConf = 0;
+      for (let i = 0; i < event.results[0].length; i++) {
+        const alt = event.results[0][i];
+        if (alt.confidence > bestConf) { bestConf = alt.confidence; bestText = alt.transcript; }
+      }
+      const text = bestText.trim() || event.results[0][0].transcript.trim();
+      if (bestConf > 0 && bestConf < 0.6) { resolve(''); return; }
+      resolve(text);
+    };
     recognition.onerror = (event) => { clearTimeout(timeout); reject(new Error(event.error)); };
     recognition.onend = () => { clearTimeout(timeout); resolve(''); };
     recognition.start();
@@ -5502,8 +5555,8 @@ function scoreAngerText(text) {
     const idx = lower.indexOf(kwClean);
     if (idx === -1) continue;
 
-    // Negation check: look for negation word within 3 chars before keyword
-    const before = lower.substring(Math.max(0, idx - 4), idx);
+    // Negation check: look for negation word within 8 chars before keyword (wider context)
+    const before = lower.substring(Math.max(0, idx - 8), idx);
     let negated = false;
     for (const neg of negations) {
       if (before.endsWith(neg)) { negated = true; break; }
@@ -5515,6 +5568,67 @@ function scoreAngerText(text) {
     if (entry.cold) coldScore += entry.score;
   }
 
+  // ── Step 1.5: Sentence pattern detection (question/conditional/explanation) ──
+  // If the sentence is a question, conditional, or explanation, reduce anger score
+  let sentenceMultiplier = 1.0;
+  
+  // Question patterns: ends with 吗/呢/吧/啊, or contains 是不是/能不能/会不会/对吗/是吗
+  const questionPatterns = [
+    /吗[！!。\.]*$/, /呢[！!。\.]*$/, /吧[？\?]*$/, /啊[？\?]*$/,
+    /是不是.*[？\?]/, /能不能.*[？\?]/, /会不会.*[？\?]/,
+    /对吗[？\?]/, /是吗[？\?]/, /有没有.*[？\?]/,
+    /\?$/, /\？$/  // English question mark
+  ];
+  let isQuestion = false;
+  for (const qp of questionPatterns) {
+    if (qp.test(cleaned)) { isQuestion = true; break; }
+  }
+  if (isQuestion) {
+    sentenceMultiplier *= 0.2; // Questions are very unlikely to be anger
+    console.log('🎤 句式检测: 疑问句 → 分数×0.2');
+  }
+
+  // Conditional patterns: 如果/假如/要是/万一/假设
+  const conditionalPatterns = [
+    /如果/, /假如/, /要是/, /万一/, /假设/,
+    /if\s/i, /when\s/i  // English conditional
+  ];
+  let isConditional = false;
+  for (const cp of conditionalPatterns) {
+    if (cp.test(cleaned)) { isConditional = true; break; }
+  }
+  if (isConditional) {
+    sentenceMultiplier *= 0.4; // Conditional sentences are less likely to be anger
+    console.log('🎤 句式检测: 条件句 → 分数×0.4');
+  }
+
+  // Explanation patterns: 其实/只是/因为/所以/原因是/意思是
+  const explanationPatterns = [
+    /其实/, /只是/, /因为/, /所以/, /原因是/, /意思是/,
+    /because/i, /actually/i, /just/i  // English explanation
+  ];
+  let isExplanation = false;
+  for (const ep of explanationPatterns) {
+    if (ep.test(cleaned)) { isExplanation = true; break; }
+  }
+  if (isExplanation) {
+    sentenceMultiplier *= 0.5; // Explanations are less likely to be anger
+    console.log('🎤 句式检测: 解释句 → 分数×0.5');
+  }
+
+  // Self-talk patterns: 嗯/啊/哦/唉/哎（often self-talk or sigh）
+  const selfTalkPatterns = [
+    /^[嗯啊哦唉哎]+[,，]?/, /[嗯啊哦唉哎]+[,，]?[我你他她它]/,
+  ];
+  let isSelfTalk = false;
+  for (const sp of selfTalkPatterns) {
+    if (sp.test(cleaned)) { isSelfTalk = true; break; }
+  }
+  if (isSelfTalk) {
+    sentenceMultiplier *= 0.3;
+    console.log('🎤 句式检测: 自言自语 → 分数×0.3');
+  }
+
   // ── Step 2: Pattern matching (Tier 3) ──
   for (const pat of ASR_CONFIG.patterns) {
     if (pat.regex.test(cleaned)) {
@@ -5523,6 +5637,10 @@ function scoreAngerText(text) {
       if (pat.cold) coldScore += pat.score;
     }
   }
+
+  // ── Step 2.5: Apply sentence pattern multiplier (AFTER all scoring) ──
+  totalScore = Math.round(totalScore * sentenceMultiplier * 10) / 10;
+  coldScore = Math.round(coldScore * sentenceMultiplier * 10) / 10;
 
   // ── Step 3: Determine severity & cold classification ──
   const severity = totalScore >= 5 ? 'heavy' : totalScore >= ASR_CONFIG.triggerThreshold ? 'moderate' : totalScore >= 1 ? 'mild' : 'none';
