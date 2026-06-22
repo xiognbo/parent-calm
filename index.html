@@ -3756,7 +3756,7 @@ function spectralFlatness(freqData) {
 function computeAngerLogit(vol, pitch, cent, zcr, rate, harmonicity, flux, rolloff, flatness, temporalStats, personalBias) {
   // --- Feature normalization against baseline ---
   const b = calibBaseline || { vol: 40, pitch: 0.18, cent: 0.14, zcr: 0.12 };
-  const vr = vol / Math.max(b.vol, 1);     // volume ratio
+  let vr = vol / Math.max(b.vol, 1);     // volume ratio (let: may be clamped by ZCR noise cap)
   const pr = pitch / Math.max(b.pitch, 0.01); // pitch ratio
   const cr = cent / Math.max(b.cent, 0.01);   // centroid ratio
   var zr = zcr / Math.max(b.zcr, 0.01);     // zcr ratio
@@ -3966,7 +3966,7 @@ function monitorLoop() {
   // ── V5: Adaptive baseline — silently recalibrate every 30 minutes ──
   // During normal monitoring (not anger), accumulate background samples
   // Every 30 min, merge into baseline using weighted EMA
-  if (temporalStats && angerProb < 0.25 && harm > 0.40) {
+  if (temporalStats && angerProb < 0.25 && smoothHarmonicity > 0.40) {
     // Low-anger, voiced frame → good baseline sample
     if (!calibBaseline) calibBaseline = { vol: 40, pitch: 0.18, cent: 0.14, zcr: 0.12 };
     const alpha = 0.05; // slow EMA: 5% new, 95% old
