@@ -1141,14 +1141,118 @@ body {
 
 /* Monthly report */
 .monthly-report {
-  background: linear-gradient(135deg, #F0F6FC, #FFF8F3);
-  border-radius: var(--radius); padding: 18px 16px; margin-bottom: 10px;
-  border: 1px solid rgba(91,155,213,0.15); line-height: 1.8;
+  background: #FFFEFC; border-radius: var(--radius); padding: 0; margin-bottom: 10px;
+  border: 1px solid rgba(91,155,213,0.12); line-height: 1.8; overflow: hidden;
 }
-.monthly-report h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+/* Report header */
+.mr-header {
+  background: linear-gradient(135deg, #4A7FB5, #5B9BD5);
+  padding: 24px 20px 20px; color: white; text-align: center;
+}
+.mr-header h3 { font-size: 20px; font-weight: 800; margin: 0 0 4px; color: white; }
+.mr-header .mr-period { font-size: 13px; opacity: 0.85; margin: 0; }
+.mr-header .mr-therapist-badge {
+  display: inline-flex; align-items: center; gap: 4px; margin-top: 10px;
+  background: rgba(255,255,255,0.2); border-radius: 20px; padding: 4px 14px;
+  font-size: 12px; opacity: 0.9;
+}
+
+/* Report body */
+.mr-body { padding: 20px 16px; }
+.mr-body h4 {
+  font-size: 15px; font-weight: 700; margin: 20px 0 10px; color: #3A5A7C;
+  display: flex; align-items: center; gap: 6px;
+  padding-bottom: 8px; border-bottom: 2px solid #E8EFF6;
+}
+.mr-body h4:first-child { margin-top: 0; }
+
+/* Metric cards row */
+.mr-metrics {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0;
+}
+.mr-metric {
+  background: #F7FAFD; border-radius: 12px; padding: 12px; text-align: center;
+  border: 1px solid #E8EFF6;
+}
+.mr-metric .mr-metric-val { font-size: 24px; font-weight: 800; color: #3A5A7C; }
+.mr-metric .mr-metric-label { font-size: 11px; color: #8899AA; margin-top: 2px; }
+.mr-metric .mr-metric-sub { font-size: 11px; margin-top: 4px; }
+.mr-metric.highlight { background: #FFF5F2; border-color: #FDD8CF; }
+.mr-metric.good { background: #F0F9F0; border-color: #C8E6C9; }
+.mr-metric.warn { background: #FFF9E6; border-color: #FFE082; }
+
+/* Analysis paragraph - psychologist style */
+.mr-analysis {
+  font-size: 14px; color: #4A5568; line-height: 1.9;
+  background: #FAFBFC; border-radius: 12px; padding: 14px 16px;
+  border-left: 3px solid #5B9BD5; margin: 10px 0;
+}
+.mr-analysis p { margin: 8px 0; }
+.mr-analysis .mr-quote {
+  color: #718096; font-size: 13px; font-style: italic;
+  padding: 8px 12px; background: #F7FAFD; border-radius: 8px;
+  margin: 8px 0;
+}
+
+/* Suggestion list */
+.mr-suggestions { list-style: none; padding: 0; margin: 8px 0; }
+.mr-suggestions li {
+  padding: 10px 14px; margin: 6px 0; border-radius: 10px;
+  background: #F7FAFD; border: 1px solid #E8EFF6;
+  font-size: 13px; color: #4A5568; display: flex; gap: 8px; align-items: flex-start;
+}
+.mr-suggestions li .mr-tag {
+  flex-shrink: 0; display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 11px; font-weight: 600; margin-top: 1px;
+}
+.mr-tag.act { background: #EFE5FD; color: #7C5CBF; }
+.mr-tag.think { background: #E3F2FD; color: #3A7BBF; }
+.mr-tag.habit { background: #FFF3E0; color: #E67E22; }
+
+/* Comfort section */
+.mr-comfort {
+  background: linear-gradient(135deg, #FDF6F0, #FEF9F4);
+  border-radius: 14px; padding: 18px 16px; margin: 16px 0;
+  border: 1px solid #F5E6D3;
+}
+.mr-comfort h5 {
+  font-size: 14px; font-weight: 700; color: #C07A3C; margin: 0 0 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+.mr-comfort p { font-size: 13px; color: #6B5A4A; line-height: 2; margin: 6px 0; }
+.mr-comfort .mr-warm { color: #C07A3C; font-weight: 600; }
+
+/* Phase indicator */
+.mr-phase {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #EDF4FF; border-radius: 20px; padding: 6px 14px;
+  font-size: 13px; font-weight: 600; color: #3A7BBF; margin: 8px 0;
+}
+.mr-phase-desc { font-size: 12px; color: #718096; margin-left: 6px; font-weight: 400; }
+
+/* Mood pattern */
+.mr-mood-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin: 8px 0;
+}
+.mr-mood-day {
+  aspect-ratio: 1; border-radius: 6px; display: flex; align-items: center;
+  justify-content: center; font-size: 10px; font-weight: 600;
+}
+.mr-mood-day.hot { background: #FDE0E0; color: #C0392B; }
+.mr-mood-day.warm { background: #FEF3E2; color: #E67E22; }
+.mr-mood-day.mild { background: #F0F9F0; color: #27AE60; }
+.mr-mood-day.calm { background: #E8F4FD; color: #3A7BBF; }
+.mr-mood-day.empty { background: #F0F1F3; color: #BBB; }
+
+/* Footer */
+.mr-footer {
+  text-align: center; padding: 14px 16px; background: #FAFBFC;
+  border-top: 1px solid #EDE8E3; font-size: 12px; color: #8899AA;
+}
+.mr-footer strong { color: #4A5568; }
+
 .monthly-report .mr-highlight { color: var(--coral); font-weight: 600; }
 .monthly-report .mr-good { color: var(--green); font-weight: 600; }
-.monthly-report .mr-section { margin-top: 12px; }
 .monthly-report .mr-section-title { font-size: 13px; font-weight: 600; color: var(--blue); margin-bottom: 4px; }
 
 /* Data export row */
@@ -7566,8 +7670,11 @@ async function classifyTrigger(id, cls) {
 /* ========== MONTHLY REPORT ========== */
 async function renderMonthlyReport() {
   const el = document.getElementById('monthlyReportContent');
-  const triggers = await dbGetAll('trigger_events');
-  const journals = await dbGetAll('journal_entries');
+  const [triggers, journals, repairs, trainings, streaks] = await Promise.all([
+    dbGetAll('trigger_events'), dbGetAll('journal_entries'),
+    dbGetAll('repair_sessions'), dbGetAll('training_sessions'),
+    dbGetAll('user_streaks')
+  ]);
 
   if (triggers.length < 2 && journals.length < 2) {
     el.innerHTML = '<div class="dash-empty"><div class="empty-icon">📋</div>还没有足够的数据生成月度报告<br>持续记录后这里会自动生成分析</div>';
@@ -7579,63 +7686,264 @@ async function renderMonthlyReport() {
   const prevMonthAgo = new Date(now.getTime() - 60*86400000);
 
   const thisMonth = triggers.filter(t => new Date(t.ts) >= monthAgo);
-  const lastMonth = triggers.filter(t => {
-    const d = new Date(t.ts);
-    return d >= prevMonthAgo && d < monthAgo;
-  });
+  const lastMonth = triggers.filter(t => { const d = new Date(t.ts); return d >= prevMonthAgo && d < monthAgo; });
   const thisMonthJ = journals.filter(j => new Date(j.ts) >= monthAgo);
+  const thisMonthR = repairs.filter(r => new Date(r.ts) >= monthAgo);
+  const thisMonthTr = trainings.filter(tr => new Date(tr.ts) >= monthAgo);
 
+  // ──── 基础指标 ────
   const totalT = thisMonth.length;
   const avgScore = totalT ? Math.round(thisMonth.reduce((s,t)=>s+(t.anger_score||0),0)/totalT) : 0;
   const intervened = thisMonth.filter(t => t.intervention_type).length;
   const intRate = totalT ? Math.round(intervened/totalT*100) : 0;
-
   const aCount = [...thisMonth, ...thisMonthJ].filter(x => x.ab_class === 'A').length;
   const bCount = [...thisMonth, ...thisMonthJ].filter(x => x.ab_class === 'B').length;
   const bPct = (aCount+bCount) ? Math.round(bCount/(aCount+bCount)*100) : 0;
+  const unmarked = totalT - (aCount + bCount);
 
-  // Trend
-  const changeStr = lastMonth.length ? (totalT < lastMonth.length ? '<span class="mr-good">↓ ' + Math.round((1-totalT/lastMonth.length)*100) + '%</span>' : '<span class="mr-highlight">↑ ' + Math.round((totalT/lastMonth.length-1)*100) + '%</span>') : '—';
+  // ──── 环比趋势 ────
+  const lastCount = lastMonth.length;
+  const changePct = lastCount ? Math.round((totalT - lastCount) / lastCount * 100) : 0;
+  const trendIcon = totalT < lastCount ? '↓' : (totalT > lastCount ? '↑' : '→');
 
-  // Peak hour
+  // ──── 高峰时段 ────
   const hours = new Array(24).fill(0);
-  thisMonth.forEach(t => { hours[new Date(t.ts).getHours()]++; });
-  let peakH = 0;
-  hours.forEach((v,i) => { if (v > hours[peakH]) peakH = i; });
+  thisMonth.forEach(t => { if(t.ts) hours[new Date(t.ts).getHours()]++; });
+  let peakH = 0; hours.forEach((v,i) => { if (v > hours[peakH]) peakH = i; });
 
-  // Most common scene
+  // ──── 场景分布 ────
   const sceneCnt = {};
-  thisMonth.forEach(t => { const k = t.scene_key||'其他'; sceneCnt[k] = (sceneCnt[k]||0)+1; });
-  const topScene = Object.entries(sceneCnt).sort((a,b)=>b[1]-a[1])[0];
+  thisMonth.forEach(t => {
+    const key = t.scene_tag || (t.scene_key ? (sceneLibrary.find(s=>s.id===t.scene_key)||{}).name : '') || '';
+    if (key) sceneCnt[key] = (sceneCnt[key]||0)+1;
+  });
+  const sortedScenes = Object.entries(sceneCnt).sort((a,b)=>b[1]-a[1]);
+  const topScene = sortedScenes[0];
 
-  el.innerHTML =
-    '<h3>📋 月度情绪报告</h3>'+
-    '<p>统计周期：最近 <strong>30 天</strong></p>'+
-    '<div class="mr-section">'+
-    '<div class="mr-section-title">📊 总体数据</div>'+
-    '<p>· 发火触发：<strong>'+totalT+'</strong> 次（较上月 '+changeStr+'）<br>'+
-    '· 平均情绪评分：<strong>'+avgScore+'</strong>/100<br>'+
-    '· 干预响应率：<strong>'+intRate+'%</strong><br>'+
-    '· 主动记录：<strong>'+thisMonthJ.length+'</strong> 次</p>'+
-    '</div>'+
-    '<div class="mr-section">'+
-    '<div class="mr-section-title">🔍 发火分析</div>'+
-    '<p>'+
-    (aCount+bCount > 0 ? '· 孩子犯错 vs 家长迁怒：<strong>'+aCount+' : '+bCount+'</strong>（迁怒占比 '+bPct+'%）<br>' : '')+
-    (hours[peakH] > 0 ? '· 发火高峰：<strong>'+peakH+':00-'+(peakH+1)+':00</strong><br>' : '')+
-    (topScene ? '· 最多发火场景：<strong>'+topScene[0]+'</strong>（'+topScene[1]+'次）<br>' : '')+
-    '</p></div>'+
-    '<div class="mr-section">'+
-    '<div class="mr-section-title">💡 建议</div>'+
-    '<p>'+
-    (bPct > 40 ? '· <span class="mr-highlight">迁怒占比偏高</span>。建议在发火前先问自己："我生气真是因为孩子做错了，还是我本身情绪不好？"<br>' : '')+
-    (hours[peakH] >= 17 && hours[peakH] <= 20 ? '· 发火集中在<strong>晚高峰</strong>（17-20点）。这是家长一天最疲惫的时间段，建议提前在17点前完成孩子的关键事务，或给自己5分钟缓冲。<br>' : '')+
-    (intRate < 50 && totalT > 0 ? '· 干预响应率偏低。守护开启时手机尽量<strong>放在身边</strong>，确保能及时收到提醒。<br>' : '')+
-    (totalT < 5 ? '· 本月发火次数较少，<span class="mr-good">继续保持！</span><br>' : '')+
-    '· 推荐到「💬 话术」页复习'+(topScene ? '<strong>'+topScene[0]+'</strong>类' : '')+'场景的应对方法。<br>'+
-    '· 推荐到「💚 修复」页查看修复话术，修补亲子关系。</p>'+
-    '</div>';
+  // ──── 周趋势（4周×7天） ────
+  const weekBuckets = [0,0,0,0]; // 第1-4周触发数
+  for (let w=0; w<4; w++) {
+    const wStart = new Date(now.getTime() - (4-w)*7*86400000);
+    const wEnd = new Date(now.getTime() - (3-w)*7*86400000);
+    weekBuckets[w] = thisMonth.filter(t => { const d=new Date(t.ts); return d>=wStart && d<wEnd; }).length;
+  }
+  const weekTrend = weekBuckets.map((v,i)=>i<3 ? v - weekBuckets[i+1] : 0);
+  const improving = weekBuckets[3] < weekBuckets[0] || (weekTrend.filter(d=>d<0).length >= 2);
+
+  // ──── 修复/训练参与 ────
+  const repairCount = thisMonthR.length;
+  const trainingCount = thisMonthTr.length;
+
+  // ──── 日记情绪分布 ────
+  const journalMood = {};
+  thisMonthJ.forEach(j => { if(j.emotion) journalMood[j.emotion] = (journalMood[j.emotion]||0)+1; });
+  const totalJ = thisMonthJ.length;
+  const positiveJ = (journalMood['平静']||0) + (journalMood['轻松']||0) + (journalMood['开心']||0);
+  const negativeJ = (journalMood['生气']||0) + (journalMood['焦虑']||0) + (journalMood['难过']||0) + (journalMood['愧疚']||0);
+  const guiltJ = journalMood['愧疚'] || 0;
+
+  // ──── 愧疚信号（日记中出现"愧疚"+迁怒B占比高） ────
+  const guiltSignal = guiltJ >= 3 || (bPct >= 30 && guiltJ >= 1);
+
+  // ──── 心理阶段判定 ────
+  let phase, phaseDesc;
+  if (totalT <= 2) { phase = '🌱 觉察阶段'; phaseDesc = '刚刚开始关注情绪管理'; }
+  else if (improving && intRate >= 50) { phase = '🌿 成长阶段'; phaseDesc = '趋势向好，方法正在起效'; }
+  else if (bPct >= 40 && guiltJ >= 2) { phase = '💫 反思阶段'; phaseDesc = '频繁自责，需要更多的自我关怀'; }
+  else if (repairCount >= 3) { phase = '🌳 修复阶段'; phaseDesc = '正在积极修复亲子关系'; }
+  else { phase = '🌱 探索阶段'; phaseDesc = '在尝试中找到适合的方式'; }
+
+  // ──── 评分等级 ────
+  const scoreGrade = avgScore < 30 ? '轻度' : avgScore < 60 ? '中度' : '较高';
+  const freqGrade = totalT <= 5 ? '低频' : totalT <= 15 ? '中频' : '高频';
+
+  // ═══════════════════════════════════════════════
+  // 构建 HTML
+  // ═══════════════════════════════════════════════
+  const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  const thisMonthLabel = monthNames[now.getMonth()];
+
+  let html = '';
+
+  // ── Header ──
+  html += '<div class="mr-header">';
+  html += '<h3>📋 '+thisMonthLabel+'情绪月度报告</h3>';
+  html += '<p class="mr-period">统计周期：'+formatDate(monthAgo)+' — '+formatDate(now)+'</p>';
+  html += '<div class="mr-therapist-badge">👩‍⚕️ 心理咨询师视角 · 林博士</div>';
+  html += '</div>';
+
+  // ── Body ──
+  html += '<div class="mr-body">';
+
+  // 心理阶段
+  html += '<div class="mr-phase">'+phase+'<span class="mr-phase-desc">'+phaseDesc+'</span></div>';
+
+  // ── 1. 数据总览 ──
+  html += '<h4>📊 本月数据总览</h4>';
+  html += '<div class="mr-metrics">';
+  html += '<div class="mr-metric'+(totalT>10?' highlight':'')+'"><div class="mr-metric-val">'+totalT+'</div><div class="mr-metric-label">发火触发次数</div><div class="mr-metric-sub">'+trendIcon+' '+Math.abs(changePct)+'% vs 上月</div></div>';
+  html += '<div class="mr-metric'+(intRate>=50?' good':'')+'"><div class="mr-metric-val">'+intRate+'%</div><div class="mr-metric-label">干预响应率</div><div class="mr-metric-sub">'+(intRate>=50?'✅ 反应良好':intRate>=30?'⚠️ 有待提升':'🔴 需要关注')+'</div></div>';
+  html += '<div class="mr-metric"><div class="mr-metric-val">'+avgScore+'</div><div class="mr-metric-label">平均情绪强度</div><div class="mr-metric-sub">'+scoreGrade+'级别</div></div>';
+  html += '<div class="mr-metric'+(repairCount>=2?' good':'')+'"><div class="mr-metric-val">'+repairCount+'</div><div class="mr-metric-label">修复行为次数</div><div class="mr-metric-sub">'+(repairCount>=3?'👍 积极修复':repairCount>=1?'🌱 开始尝试':'📌 可以开始')+'</div></div>';
+  html += '<div class="mr-metric"><div class="mr-metric-val">'+totalJ+'</div><div class="mr-metric-label">心情日记条数</div><div class="mr-metric-sub">'+freqGrade+'频率记录</div></div>';
+  html += '<div class="mr-metric'+(trainingCount>=2?' good':'')+'"><div class="mr-metric-val">'+trainingCount+'</div><div class="mr-metric-label">完成训练课数</div><div class="mr-metric-sub">'+(trainingCount>=3?'🎯 在坚持':trainingCount>=1?'🌱 开始训练':'📌 推荐开始')+'</div></div>';
+  html += '</div>';
+
+  // ── 2. 心理学家分析 ──
+  html += '<h4>🧠 心理学家分析</h4>';
+  html += '<div class="mr-analysis">';
+
+  // 总体判断
+  if (totalT >= 15) {
+    html += '<p>📌 <strong>从数据看，你是高频发火型家长。</strong>这不是说你"脾气不好"——而是说明你长期处于高压状态，情绪调节的"油箱"已经快空了。发火是结果，不是原因。</p>';
+  } else if (totalT >= 6) {
+    html += '<p>📌 <strong>你的发火频率处于中等水平，</strong>这是大多数育儿期家长的典型状态。真正值得关注的是：你是"对孩子行为发火"，还是"对自己状态发火"？</p>';
+  } else {
+    html += '<p>📌 <strong>总体情绪控制在较好水平。</strong>你已经有意识地管理自己的情绪反应，这是很多家长还没迈出的第一步。</p>';
+  }
+
+  // AB分类分析
+  if (aCount + bCount > 0) {
+    html += '<p>🔍 '+(bPct >= 40
+      ? '<strong>迁怒占比高达 '+bPct+'%，</strong>这说明你的发火很多时候不是因为孩子做错了什么，而是你自己本身已经处于情绪过载状态。孩子只是那颗"引爆最后一厘米的导火索"。心理学上称之为"情绪溢出效应"——当你在工作、家庭、社交中积压了大量情绪后，最安全的目标（孩子）就成了宣泄口。'
+      : '<strong>孩子犯错占比较高（'+(100-bPct)+'%），</strong>你发火的触发点更多的是孩子的实际行为。这说明你是有原则的，不是无缘无故发火。但有时候我们也需要区分：是孩子的行为真的不可接受，还是我们的期待超出了孩子的能力范围？')+'</p>';
+  }
+
+  // 趋势分析
+  if (lastCount > 0) {
+    html += '<p>📈 相比上月，发火次数 <strong>'+(totalT > lastCount ? '增加了'+Math.abs(changePct)+'%' : '减少了'+Math.abs(changePct)+'%')+'</strong>。'+(improving
+      ? '近4周趋势显示情况在逐步好转，你正在从"发火→后悔"的循环中慢慢走出来。'
+      : '目前还没有看到明显的下降趋势。波动是正常的，每个家长都会经历"好一周、坏一周"的反复。不要因此觉得自己做得不好。')+'</p>';
+  }
+
+  // 修复行为
+  if (repairCount >= 3) {
+    html += '<p>💚 <strong>你本月主动使用了 '+repairCount+' 次修复话术</strong>——这是非常有力量的举动。心理学研究表明，发火后的修复行为（道歉、解释、拥抱）对亲子关系的修复效果是发火伤害的<strong>3-5倍</strong>。你不是在"弥补错误"，你是在教会孩子一个更重要的事：人都会犯错，但我们可以修复关系。</p>';
+  } else if (repairCount === 0 && totalT >= 3) {
+    html += '<p>💡 本月还没有记录修复行为。很多家长发火后陷入"愧疚→回避→假装没发生"的循环。其实<strong>孩子并不需要一个完美的父母，他们需要的是一个"会道歉"的父母。</strong>下次发火后，试试对孩子说一句"刚才妈妈/爸爸太着急了，对不起"——这句话的力量可能超出你的想象。</p>';
+  }
+
+  html += '</div>';
+
+  // ── 3. 深度洞察 ──
+  html += '<h4>🔍 深度洞察</h4>';
+  html += '<div class="mr-analysis">';
+
+  // 高峰时段洞察
+  if (hours[peakH] > 0) {
+    const peakDesc = peakH < 12 ? '上午时段' : peakH < 18 ? '下午时段' : '晚间时段';
+    html += '<p>⏰ <strong>你的发火高峰在 '+peakH+':00-'+(peakH+1)+':00（'+peakDesc+'）。</strong>';
+    if (peakH >= 17 && peakH <= 20) {
+      html += '这是典型的"下班后疲惫综合征"——经过一天的工作/家务后，心理资源已经耗尽。心理学家Baumeister称之为"自我损耗"——当你的意志力被工作消耗殆尽后，控制情绪的能力会显著下降。建议在17:00-18:00给自己安排一个"缓冲仪式"：喝杯水、坐5分钟、做3次深呼吸，让大脑从"工作模式"切换到"陪伴模式"。</p>';
+    } else if (peakH >= 7 && peakH <= 9) {
+      html += '早晨是很多家长压力最大的时段——赶时间、叫起床、准备早餐、送上学，多件事同时推进。这被称为"决策疲劳叠加期"。建议前一天晚上做好第二天早晨的准备（衣服、书包、早餐材料），减少早晨的决策负担。</p>';
+    } else {
+      html += '这个时段可能是你一天中比较容易疲惫或比较忙的时候。试着在这个时段到来之前做一件小事情让自己放松，哪怕只是喝杯水、看窗外30秒。</p>';
+    }
+  }
+
+  // 场景洞察
+  if (sortedScenes.length >= 2) {
+    html += '<p>🎯 发火场景呈现<strong>"集中触发"</strong>模式：';
+    const top2 = sortedScenes.slice(0,2).map(s => s[0]).join('和');
+    html += '主要集中在<b>'+top2+'</b>方面。这不是巧合——说明这些场景触发了你的"自动化反应"。心理学上，这是条件反射形成的"情绪脚本"——特定场景→特定情绪→特定行为。好消息是：脚本是可以改写的。建议针对「'+sortedScenes[0][0]+'」场景，提前练习替代反应（如"深呼吸→数5秒→换一句话说"）。</p>';
+  }
+
+  // 日记洞察
+  if (totalJ >= 5) {
+    html += '<p>📝 日记情绪组成中，积极情绪占 <strong>'+Math.round(positiveJ/totalJ*100)+'%</strong>，消极情绪占 <strong>'+Math.round(negativeJ/totalJ*100)+'%</strong>。';
+    if (guiltJ >= 3) {
+      html += '<strong>愧疚情绪出现频率较高（'+guiltJ+'次），</strong>请务必看下面的"致愧疚的你"部分——这是为你写的。</p>';
+    } else {
+      html += '你在记录中展现了不错的情绪觉察力——能命名情绪是管理情绪的第一步。</p>';
+    }
+  } else {
+    html += '<p>📝 本月日记记录较少。写日记不仅是记录，更是"元认知"练习——当你把情绪写下来的时候，你就从"被情绪淹没"变成了"观察情绪"。哪怕每天只写一句话，都会有帮助。</p>';
+  }
+
+  html += '</div>';
+
+  // ── 4. 专业建议 ──
+  html += '<h4>💡 个性化建议</h4>';
+  html += '<ul class="mr-suggestions">';
+
+  if (intRate < 50 && totalT >= 3) {
+    html += '<li><span class="mr-tag act">行动</span><div>你的干预响应率偏低（'+intRate+'%）。建议检查：① 守护功能是否在发火时段打开了？② 手机是否在可听到声音的距离内？③ 震动力度是否足够感知？——技术上确保"刹车"能及时踩下。</div></li>';
+  }
+
+  if (bPct >= 30) {
+    html += '<li><span class="mr-tag think">认知</span><div>迁怒占比偏高是很多家长的真实困境。<strong>一个简单的训练：</strong>每次想发火时，先对自己说"我现在的情绪，有几分是因为孩子，几分是因为我自己？"——不需要答案，只需要这个停顿。这个停顿本身就是"去自动化"。</div></li>';
+  }
+
+  if (hours[peakH] >= 17 && hours[peakH] <= 20) {
+    html += '<li><span class="mr-tag habit">习惯</span><div>建议在晚高峰（17:00-20:00）前安排一个<strong>"5分钟微休息"仪式：</strong>洗把脸、喝杯凉水、做3组深呼吸（吸气4秒→屏2秒→呼气6秒）。这不是浪费时间，这是给你的情绪系统做"系统重置"。</div></li>';
+  }
+
+  if (repairCount < totalT && totalT >= 3) {
+    html += '<li><span class="mr-tag act">行动</span><div>建议每次发火后<strong>24小时内完成一次"修复对话"。</strong>不需要长篇大论，一句话就够了："刚才妈妈/爸爸语气不好，不是你的错，是我自己没控制好。我爱你。"——这句话不会纵容孩子的行为，但会保护你们的关系。</div></li>';
+  }
+
+  if (trainingCount < 2) {
+    html += '<li><span class="mr-tag habit">习惯</span><div>本月训练课程参与较少。推荐从"🎯 训练"页面选择<strong>第1级·觉察呼吸</strong>开始，每天只需3分钟——这是所有情绪管理技术的"基本功"，像锻炼肌肉一样，越练越强。</div></li>';
+  }
+
+  html += '<li><span class="mr-tag think">认知</span><div><strong>重新定义"发火"：</strong>发火不是你的失败，而是你的神经系统在告诉你——你已经承受了太多。把发火看作一个"压力指示灯"，而不是"我是个坏家长"的证明。</div></li>';
+
+  if (totalT >= 10) {
+    html += '<li><span class="mr-tag act">行动</span><div>高频发火背后往往是<strong>"完美家长"的不合理期待。</strong>试着做一个练习：每天睡前写下"今天我做得好的3件事"——哪怕只是"今天推迟了30秒才发火"也算。大脑需要训练，也需要鼓励。</div></li>';
+  }
+
+  html += '</ul>';
+
+  // ── 5. 心理按摩：致愧疚的你 ──
+  html += '<div class="mr-comfort">';
+  html += '<h5>💚 致愧疚的你——心理咨询师想对你说</h5>';
+
+  if (guiltJ >= 2 || guiltSignal || bPct >= 30) {
+    html += '<p>从数据中我看到，<span class="mr-warm">你对自己很严格。</span>你记录了多次愧疚的情绪，你在迁怒之后会深深自责——这种痛苦，我懂。</p>';
+  }
+
+  html += '<p>但我想说一个你可能没想过的事实：<span class="mr-warm">会愧疚的家长，不是坏家长。恰恰相反——</span>只有在意孩子的人才会愧疚，只有努力想做好的人才会自责。那些真正伤害孩子却毫不在意的家长，<strong>从不觉得愧疚。</strong></p>';
+
+  html += '<p>心理学上有一个概念叫<span class="mr-warm">"够好的母亲"（Good Enough Mother）</span>——英国心理学家温尼科特提出，孩子不需要完美父母，他们需要的是"够好"的父母：大多数时候在，偶尔失误但会修复。事实上，<strong>父母偶尔的失误+真诚的修复，比永远完美的父母更能培养孩子的心理韧性。</strong>因为孩子学到的不是"世界完美无缺"，而是"关系可以在裂痕后重建"。</p>';
+
+  html += '<p>所以你每次发火后的修复——哪怕是简单的一句"对不起，妈妈/爸爸刚才太急了"——'+(repairCount >= 2
+    ? '你已经在做了（本月'+repairCount+'次修复记录），这是你给孩子最宝贵的礼物之一。你教会了他们：<span class="mr-warm">爱不是从来不伤害，而是伤害之后愿意修复。</span>'
+    : '你还没有开始，但任何时候都不晚。那句话的力量，远比你想象的大。')+'</p>';
+
+  html += '<p>我还有三个建议，希望你能在心里默念：</p>';
+  html += '<p>❶ <span class="mr-warm">"我也在学做父母，犯错是被允许的。"</span>——你不需要成为完美的家长，你只需要成为"在成长"的家长。</p>';
+  html += '<p>❷ <span class="mr-warm">"我对自己，应该像对孩子一样温柔。"</span>——你允许孩子犯错，为什么不允许自己？自我慈悲不是软弱，是真正的力量。</p>';
+  html += '<p>❸ <span class="mr-warm">"今天不行，明天再试。"</span>——育儿不是百米冲刺，是马拉松。倒下了就休息，明天太阳升起时，你还有新的机会。</p>';
+
+  html += '<p style="margin-top:12px; text-align:center; font-size:14px;">——林博士<br><span style="font-size:11px; color:#9A8A7A;">（虚拟心理咨询师，基于认知行为疗法与依恋理论）</span></p>';
+  html += '</div>';
+
+  // ── 6. 下月展望 ──
+  html += '<h4>📈 下月展望</h4>';
+  html += '<div class="mr-analysis">';
+  if (improving && totalT >= 3) {
+    html += '<p>基于本月趋势，你的情绪管理正在向好。下月可以尝试：<strong>把目标从"减少发火次数"调整为"缩短发火后的恢复时间"</strong>——比如从发火到冷静，从30分钟缩短到10分钟。这是一个更具体、更容易达成的目标。</p>';
+  } else if (totalT >= 6) {
+    html += '<p>下月的重点建议放在<strong>"觉察而非控制"</strong>上。不要追求"不发火"，而是追求"发火之前能觉察到"。每一次觉察——哪怕最后还是发了火——都是进步。觉察是改变的第一步，也是最难的一步。</p>';
+  } else {
+    html += '<p>继续保持记录和觉察的习惯。数据会越来越丰富，AI也会越来越了解你的模式，给出的建议会更精准。记住：<strong>进步不是直线，而是螺旋式上升。</strong></p>';
+  }
+
+  if (sortedScenes.length > 0) {
+    html += '<p>🎯 建议下月重点攻关：<strong>「'+sortedScenes[0][0]+'」场景。</strong>在「💬 安抚」中预习相关话术，提前在大脑中建立"替代反应通路"。</p>';
+  }
+  html += '</div>';
+
+  html += '</div>'; // mr-body
+
+  // ── Footer ──
+  html += '<div class="mr-footer">本报告由 <strong>家长冷静助手 AI</strong> 基于你的行为数据自动生成<br>不构成医疗建议 · 严重情绪问题请寻求专业心理咨询</div>';
+
+  el.innerHTML = html;
 }
+
+function formatDate(d) { return (d.getMonth()+1)+'/'+d.getDate(); }
 
 /* ========== MAIN DASHBOARD RENDER ========== */
 async function renderDashboard() {
