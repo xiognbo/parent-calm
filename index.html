@@ -172,6 +172,47 @@ body {
   color: var(--text-sub); font-size: 14px; cursor: pointer; margin-top: 4px;
 }
 
+/* Tier2 触发后分类弹窗 */
+.classify-overlay {
+  position: fixed; inset: 0; z-index: 260; background: rgba(0,0,0,0.5);
+  display: none; align-items: flex-end; justify-content: center;
+}
+.classify-overlay.active { display: flex; }
+.classify-sheet {
+  background: var(--card); border-radius: 20px 20px 0 0;
+  width: 100%; max-width: 480px; max-height: 80vh; overflow-y: auto;
+  padding: 24px 20px; animation: slideUp 0.3s ease;
+}
+.classify-sheet h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; text-align: center; }
+.classify-hint { font-size: 13px; color: var(--text-sub); text-align: center; margin-bottom: 16px; }
+.classify-row { margin-bottom: 16px; }
+.classify-label { font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; }
+.classify-ab { display: flex; gap: 10px; }
+.classify-ab-btn {
+  flex: 1; padding: 12px; border-radius: 12px; border: 2px solid #E8E3DD;
+  background: var(--card); font-size: 15px; font-weight: 600; cursor: pointer;
+  text-align: center; transition: all 0.15s;
+}
+.classify-ab-btn.selected.A { border-color: var(--coral); background: #FFF0EC; color: var(--coral); }
+.classify-ab-btn.selected.B { border-color: #8B6DD8; background: #F0E8FE; color: #8B6DD8; }
+.classify-scenes { display: flex; gap: 6px; flex-wrap: wrap; }
+.classify-scene {
+  padding: 6px 12px; border-radius: 16px; border: 1.5px solid #E8E3DD;
+  background: var(--card); font-size: 12px; cursor: pointer; transition: all 0.15s;
+}
+.classify-scene.selected { border-color: var(--blue); background: #EDF4FF; }
+.classify-save {
+  width: 100%; padding: 14px; border-radius: 14px; border: none;
+  background: var(--coral); color: white; font-size: 16px; font-weight: 700;
+  cursor: pointer; margin-top: 8px; transition: all 0.15s;
+}
+.classify-save:active { transform: scale(0.97); }
+.classify-save:disabled { background: #CCC; color: #999; cursor: not-allowed; }
+.classify-skip {
+  width: 100%; padding: 10px; border: none; background: none;
+  color: var(--text-sub); font-size: 14px; cursor: pointer; margin-top: 4px;
+}
+
 /* Quick stats idle */
 .guard-stats {
   display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
@@ -1946,6 +1987,27 @@ body {
     </div>
   </div>
 
+  <!-- Tier2 触发后分类弹窗 -->
+  <div class="classify-overlay" id="classifyOverlay" onclick="if(event.target===this)closeClassifyOverlay()">
+    <div class="classify-sheet">
+      <h3>📋 这次发火的分类</h3>
+      <p class="classify-hint">帮你更准确地追踪发火原因</p>
+      <div class="classify-row">
+        <div class="classify-label">发火原因</div>
+        <div class="classify-ab">
+          <div class="classify-ab-btn A" id="clsAbA" onclick="selectClsAb('A')">A·孩子犯错</div>
+          <div class="classify-ab-btn" id="clsAbB" onclick="selectClsAb('B')">B·家长迁怒</div>
+        </div>
+      </div>
+      <div class="classify-row">
+        <div class="classify-label">触发场景（可选）</div>
+        <div class="classify-scenes" id="clsScenes"></div>
+      </div>
+      <button class="classify-save" id="clsSaveBtn" onclick="savePostAlertClassify()">💾 保存分类</button>
+      <button class="classify-skip" onclick="skipClassify()">跳过</button>
+    </div>
+  </div>
+
   <!-- 心情复盘详情弹窗 -->
   <div class="journal-detail-overlay" id="journalDetailOverlay" onclick="if(event.target===this)closeJournalDetail()">
     <div class="journal-detail-card" id="journalDetailCard">
@@ -2346,7 +2408,7 @@ async function updateStreakToday() {
 }
 
 /* ========== TRIGGER EVENT LOGGING ========== */
-async function logTriggerEvent(triggerType) {
+async function logTriggerEvent(triggerType, abClass, sceneKey) {
   await ensureUserId();
   const now = new Date();
   const evt = {
@@ -2363,6 +2425,8 @@ async function logTriggerEvent(triggerType) {
     duration_ms: redZoneStart ? (now.getTime() - redZoneStart) : 0,
     trigger_type: triggerType,
     scene_tag: '',
+    scene_key: sceneKey || '',
+    ab_class: abClass || null,
     day_of_week: now.getDay(),
     is_spike: triggerType === 'spike' ? 1 : 0
   };
@@ -6452,6 +6516,8 @@ function resumeGuarding() {
   // 20 second cooldown
   setTimeout(()=>{ alertCooldown = false; }, 20000);
   monitorLoop();
+  // 弹出分类弹窗（延迟让 UI 先恢复）
+  setTimeout(() => showPostAlertClassify(), 600);
 }
 
 async function logAndResume() {
@@ -6501,6 +6567,8 @@ async function logAndResume() {
   await renderJournalListAsync();
   await updateDataPanel();
   monitorLoop();
+  // 弹出分类弹窗
+  setTimeout(() => showPostAlertClassify(), 600);
 }
 
 /* ========== ANFU VIEW (Layer 2: 分场景修复安抚) ========== */
@@ -6721,6 +6789,7 @@ async function saveQuickRecord() {
     duration_ms: 0,
     trigger_type: 'manual',
     scene_tag: scene ? scene.name : '',
+    scene_key: qrScene || '',
     day_of_week: now.getDay(),
     is_spike: 0,
     ab_class: qrAb || null
@@ -6754,6 +6823,68 @@ async function saveQuickRecord() {
 
   closeQuickRecord();
   showToast('已记录 ✅');
+}
+
+/* ========== Tier2 触发后分类弹窗 ========== */
+let clsAb = '', clsScene = '';
+
+function showPostAlertClassify() {
+  clsAb = ''; clsScene = '';
+  // Build scene chips
+  document.getElementById('clsScenes').innerHTML = sceneLibrary.map(s =>
+    `<div class="classify-scene" data-sid="${s.id}" onclick="selectClsScene('${s.id}')">${s.icon} ${s.name}</div>`
+  ).join('');
+  document.getElementById('clsAbA').className = 'classify-ab-btn A';
+  document.getElementById('clsAbB').className = 'classify-ab-btn';
+  document.getElementById('clsSaveBtn').disabled = true;
+  document.getElementById('classifyOverlay').classList.add('active');
+}
+
+function selectClsAb(type) {
+  clsAb = type;
+  document.getElementById('clsAbA').className = 'classify-ab-btn A' + (type === 'A' ? ' selected.A' : '');
+  document.getElementById('clsAbB').className = 'classify-ab-btn' + (type === 'B' ? ' selected.B' : '');
+  document.getElementById('clsSaveBtn').disabled = false;
+}
+
+function selectClsScene(id) {
+  // Toggle: deselect if already selected, otherwise select single
+  clsScene = (clsScene === id) ? '' : id;
+  // Update UI: only selected chip gets 'selected'
+  document.querySelectorAll('#clsScenes .classify-scene').forEach(el => {
+    const sid = el.getAttribute('data-sid');
+    el.classList.toggle('selected', sid === clsScene);
+  });
+}
+
+async function savePostAlertClassify() {
+  if (!currentTriggerId || !clsAb) { closeClassifyOverlay(); return; }
+
+  // 通过 scene_key 查找场景名称作为 scene_tag
+  const scene = clsScene ? sceneLibrary.find(s => s.id === clsScene) : null;
+
+  try {
+    const t = await dbGet('trigger_events', currentTriggerId);
+    if (t) {
+      t.ab_class = clsAb;
+      t.scene_key = clsScene || '';
+      t.scene_tag = scene ? scene.name : (t.scene_tag || '');
+      await dbPut('trigger_events', t);
+    }
+  } catch(e) { console.warn('更新 trigger 分类失败', e); }
+
+  closeClassifyOverlay();
+  showToast(clsAb === 'A' ? '已记录：孩子犯错' : '已记录：家长迁怒');
+  // 刷新看板
+  setTimeout(() => renderDashboard(), 500);
+}
+
+function closeClassifyOverlay() {
+  document.getElementById('classifyOverlay').classList.remove('active');
+}
+
+function skipClassify() {
+  closeClassifyOverlay();
 }
 
 async function saveJournal() {
@@ -7370,10 +7501,29 @@ function renderSceneChart(triggers) {
     { key:'other', label:'💬 其他', cls:'other' },
     { key:'', label:'未分类', cls:'other' }
   ];
+  // 场景名称 → 分类 key 映射（从 sceneLibrary 构建）
+  const nameToCatKey = {};
+  sceneLibrary.forEach(s => {
+    if (s.cat === '学习相关') nameToCatKey[s.name] = 'learning';
+    else if (s.cat === '习惯相关') nameToCatKey[s.name] = 'habit';
+    else if (s.cat === '情绪相关') nameToCatKey[s.name] = 'emotion';
+    else if (s.cat === '生活相关') nameToCatKey[s.name] = 'daily';
+    else nameToCatKey[s.name] = 'other';
+  });
+
   const cnt = {};
   scenes.forEach(s => { cnt[s.key] = 0; });
   triggers.forEach(t => {
-    const k = t.scene_key || '';
+    // 优先用 scene_key（场景ID），其次用 scene_tag 反查（场景名称→分类）
+    let k = '';
+    if (t.scene_key) {
+      const sc = sceneLibrary.find(s => s.id === t.scene_key);
+      k = sc ? (nameToCatKey[sc.name] || 'other') : 'other';
+    } else if (t.scene_tag) {
+      k = nameToCatKey[t.scene_tag] || 'other';
+    } else {
+      k = '';
+    }
     cnt[k] = (cnt[k]||0) + 1;
   });
   const total = Object.values(cnt).reduce((a,b)=>a+b,0);
