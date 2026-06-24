@@ -551,65 +551,202 @@ body {
 .light-alert-feedback { margin-top: 12px; padding-top: 12px; border-top: 1px solid #F0F0F0; display: none; }
 .light-alert-feedback-text { font-size: 13px; color: var(--text-sub); margin-bottom: 8px; }
 
+/* ========== HEAVY ALERT — Layer 2 红色全屏预警（两步骤：离开→深呼吸） ========== */
 .guard-alert {
   flex: 1; display: none; flex-direction: column; align-items: center; justify-content: center;
   position: fixed; inset: 0; z-index: 200;
-  background: rgba(26,21,18,0.95);
+  background: linear-gradient(135deg, rgba(180,18,28,0.97), rgba(120,8,16,0.98), rgba(180,18,28,0.97));
+  overflow: hidden;
+}
+.guard-alert::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 40%, rgba(255,80,60,0.15), transparent 70%);
+  animation: haGlow 3s ease-in-out infinite;
+}
+@keyframes haGlow {
+  0%, 100% { opacity: 0.6; } 50% { opacity: 1; }
 }
 .guard-alert.active { display: flex; }
 
-.alert-inner {
+.ha-step {
   display: flex; flex-direction: column; align-items: center;
-  animation: alertFadeIn 0.6s ease;
-  padding: 0 32px; max-width: 400px;
+  animation: haFadeIn 0.5s ease;
+  padding: 0 30px; max-width: 400px; width: 100%;
+  position: relative; z-index: 1;
 }
-@keyframes alertFadeIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.alert-breathe-circle {
-  width: 140px; height: 140px; border-radius: 50%;
-  background: radial-gradient(circle at 40% 40%, rgba(232,115,90,0.4), rgba(232,115,90,0.1));
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 20px;
-  box-shadow: 0 0 60px rgba(232,115,90,0.15);
-  transition: transform 4s ease;
+@keyframes haFadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.alert-breathe-inner {
-  width: 40px; height: 40px; border-radius: 50%;
+/* ── Step 1: Leave ── */
+.ha-leave-icon {
+  font-size: 64px; margin-bottom: 14px;
+  animation: haWalkBounce 1s ease-in-out infinite;
+}
+@keyframes haWalkBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.ha-leave-title {
+  font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 6px;
+  text-align: center; letter-spacing: 1px;
+}
+.ha-leave-sub {
+  font-size: 14px; color: rgba(255,255,255,0.65); text-align: center;
+  line-height: 1.6; margin-bottom: 24px;
+}
+.ha-leave-progress {
+  display: flex; gap: 8px;
+}
+.ha-leave-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  transition: all 0.4s ease;
+}
+.ha-leave-dot.active {
+  background: rgba(255,255,255,0.9);
+  box-shadow: 0 0 10px rgba(255,255,255,0.5);
+  transform: scale(1.6);
+}
+
+/* ── Step 2: Breathing Animation Person ── */
+.ha-breathe-scene {
+  position: relative; width: 200px; height: 260px; margin-bottom: 18px;
+}
+.ha-breathe-scene svg { width: 100%; height: 100%; }
+
+/* Breathing aura ring */
+.ha-aura {
+  fill: none; stroke: rgba(255,200,180,0.3);
+  stroke-width: 2; stroke-dasharray: 8 4;
+}
+.ha-aura-inner {
+  fill: rgba(255,100,70,0.08);
+}
+
+/* Person parts */
+.ha-head {
+  fill: rgba(255,255,255,0.85);
+}
+.ha-shoulder {
+  fill: rgba(255,255,255,0.75);
+  transform-origin: center;
+}
+.ha-torso {
+  fill: rgba(255,255,255,0.65);
+  transform-origin: 100px 150px;
+}
+.ha-arm {
+  fill: none; stroke: rgba(255,255,255,0.6);
+  stroke-width: 10; stroke-linecap: round;
+  transform-origin: center;
+}
+.ha-legs {
+  fill: rgba(255,255,255,0.55);
+}
+
+/* Heart/breath indicator */
+.ha-heart-icon {
+  font-size: 22px;
+}
+
+/* Inhale animation — body expands */
+.ha-breathe-scene.inhale .ha-torso {
+  transition: transform 4s ease-in-out;
+  transform: scaleX(1.35) scaleY(1.08);
+}
+.ha-breathe-scene.inhale .ha-aura-outer {
+  transition: transform 4s ease-in-out;
+  transform: scale(1.25);
+}
+.ha-breathe-scene.inhale .ha-aura-inner {
+  transition: transform 4s ease-in-out;
+  transform: scale(1.45);
+}
+.ha-breathe-scene.inhale .ha-shoulder {
+  transition: transform 4s ease-in-out;
+  transform: translateY(-6px);
+}
+.ha-breathe-scene.inhale .ha-heart-icon {
+  animation: haHeartBeat 0.8s ease-in-out infinite;
+}
+
+/* Hold — maintain expanded state */
+.ha-breathe-scene.hold .ha-torso {
+  transition: none; transform: scaleX(1.35) scaleY(1.08);
+}
+.ha-breathe-scene.hold .ha-aura-outer {
+  transition: none; transform: scale(1.25);
+}
+.ha-breathe-scene.hold .ha-aura-inner {
+  transition: none; transform: scale(1.45);
+}
+.ha-breathe-scene.hold .ha-shoulder {
+  transition: none; transform: translateY(-6px);
+}
+
+/* Exhale animation — body contracts */
+.ha-breathe-scene.exhale .ha-torso {
+  transition: transform 8s ease-in-out;
+  transform: scaleX(1) scaleY(1);
+}
+.ha-breathe-scene.exhale .ha-aura-outer {
+  transition: transform 8s ease-in-out;
+  transform: scale(1);
+}
+.ha-breathe-scene.exhale .ha-aura-inner {
+  transition: transform 8s ease-in-out;
+  transform: scale(1);
+}
+.ha-breathe-scene.exhale .ha-shoulder {
+  transition: transform 8s ease-in-out;
+  transform: translateY(0px);
+}
+.ha-breathe-scene.exhale .ha-heart-icon {
+  animation: none;
+}
+@keyframes haHeartBeat {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.3); }
+}
+
+/* Breathing text */
+.ha-breathe-text {
+  font-size: 20px; font-weight: 700; color: rgba(255,255,255,0.9);
+  text-align: center; margin-bottom: 4px;
+}
+.ha-breathe-hint {
+  font-size: 13px; color: rgba(255,255,255,0.45); margin-bottom: 18px;
+  text-align: center; min-height: 18px;
+}
+.ha-breathe-progress {
+  display: flex; gap: 6px; margin-bottom: 18px;
+}
+.ha-breathe-dot {
+  width: 10px; height: 10px; border-radius: 50%;
   background: rgba(255,255,255,0.2);
-  transition: transform 4s ease;
+  transition: all 0.3s ease;
+}
+.ha-breathe-dot.done {
+  background: var(--green); box-shadow: 0 0 8px rgba(128,210,150,0.5);
 }
 
-.alert-text {
-  font-size: 22px; font-weight: 700; color: rgba(255,255,255,0.9);
-  margin-bottom: 6px; text-align: center;
+/* Action buttons (shown after breathing done) */
+.ha-actions {
+  display: flex; gap: 12px;
 }
-.alert-sub {
-  font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 20px;
-  text-align: center; line-height: 1.5;
+.ha-btn {
+  padding: 13px 26px; border-radius: 28px; border: none;
+  font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+  animation: haFadeIn 0.4s ease;
 }
-.alert-hint {
-  font-size: 13px; color: rgba(255,255,255,0.35); margin-bottom: 24px;
-  animation: hintPulse 3s ease-in-out infinite;
+.ha-btn.primary { background: var(--green); color: #fff; }
+.ha-btn.ghost {
+  background: transparent; color: rgba(255,255,255,0.55);
+  border: 1.5px solid rgba(255,255,255,0.2);
 }
-@keyframes hintPulse {
-  0%, 100% { opacity: 0.35; } 50% { opacity: 0.7; }
-}
-
-.alert-actions { display: flex; gap: 12px; }
-.alert-btn {
-  padding: 12px 24px; border-radius: 25px; border: none;
-  font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
-}
-.alert-btn.primary { background: var(--green); color: white; }
-.alert-btn.ghost {
-  background: transparent; color: rgba(255,255,255,0.5);
-  border: 1px solid rgba(255,255,255,0.2);
-}
-.alert-btn:active { transform: scale(0.96); }
+.ha-btn:active { transform: scale(0.95); }
 
 /* ========== SCRIPTS VIEW ========== */
 .scripts-tabs {
@@ -695,6 +832,20 @@ body {
 }
 .journal-search-input:focus { border-color: var(--coral); background: white; }
 .journal-search-input::placeholder { color: var(--text-light); }
+
+/* journal tag legend */
+.journal-legend {
+  display: none; margin: 8px 0 4px; padding: 8px 12px;
+  background: #FAFAFA; border-radius: 10px;
+}
+.journal-legend.visible { display: block; }
+.journal-legend-title { font-size: 11px; color: var(--text-light); margin-bottom: 6px; }
+.journal-legend-row { display: flex; flex-wrap: wrap; gap: 6px 12px; }
+.journal-legend-item { font-size: 10px; color: var(--text-sub); display: inline-flex; align-items: center; gap: 3px; }
+.journal-legend-divider { width: 1px; height: 12px; background: #E0E0E0; align-self: center; }
+.journal-legend-intensity { display: inline-flex; gap: 2px; align-items: center; }
+.journal-legend-intensity span { font-size: 10px; color: var(--text-sub); }
+.journal-legend-ab { font-size: 10px; padding: 1px 6px; border-radius: 8px; }
 
 .journal-load-row { display: flex; justify-content: center; padding: 8px 0 4px; }
 .journal-pager {
@@ -1317,8 +1468,17 @@ body {
   box-shadow: 0 1px 6px rgba(61,50,38,0.06); cursor: pointer; transition: transform 0.15s;
 }
 .level-progress-card:active { transform: scale(0.985); }
-.level-progress-card.locked { opacity: 0.5; cursor: not-allowed; }
-.level-progress-card.locked:active { transform: none; }
+.level-progress-card.ahead { border-left: 3px solid #B0C4DE; }
+.level-progress-badge.ahead { background: #EBF3FA; color: #6B8CAE; }
+.level-progress-chain {
+  display: flex; flex-direction: column; align-items: center; margin: -2px 0;
+  position: relative; left: 22px; /* align with level-icon center */
+}
+.level-progress-chain-line {
+  width: 2px; height: 12px; background: linear-gradient(to bottom, var(--green), #EBF3FA);
+  border-radius: 1px;
+}
+.level-progress-chain-line.ahead { background: linear-gradient(to bottom, #B0C4DE, #D8E4F0); }
 .level-icon {
   width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center;
   justify-content: center; font-size: 22px; flex-shrink: 0;
@@ -1521,22 +1681,44 @@ body {
 .anfu-cat-tab.active { background: var(--blue); color: white; border-color: var(--blue); }
 .anfu-cat-tab:active { transform: scale(0.96); }
 
+/* search bar */
+.anfu-search-bar { margin-bottom: 10px; }
+.anfu-search-input {
+  width: 100%; padding: 10px 14px; border-radius: 20px;
+  border: 1.5px solid #E8E3DD; background: var(--card);
+  font-size: 13px; color: var(--text); outline: none; box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+.anfu-search-input:focus { border-color: var(--blue); }
+.anfu-search-input::placeholder { color: var(--text-light); }
+
+/* scene grid */
+.anfu-scene-list {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.anfu-scene-list .anfu-scene-count { grid-column: 1 / -1; }
+
 .anfu-scene-card {
-  background: var(--card); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px;
+  background: var(--card); border-radius: var(--radius); padding: 10px 8px;
   box-shadow: 0 1px 6px rgba(61,50,38,0.06); cursor: pointer; transition: all 0.15s;
-  display: flex; align-items: center; gap: 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;
 }
-.anfu-scene-card:active { transform: scale(0.985); }
-.anfu-scene-icon { font-size: 28px; flex-shrink: 0; width: 40px; text-align: center; }
-.anfu-scene-info { flex: 1; min-width: 0; }
-.anfu-scene-name { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
-.anfu-scene-desc { font-size: 12px; color: var(--text-sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.anfu-scene-badge {
-  font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; flex-shrink: 0;
-  letter-spacing: 0.5px;
+.anfu-scene-card:active { transform: scale(0.97); }
+.anfu-scene-card .anfu-scene-icon { font-size: 24px; width: auto; }
+.anfu-scene-card .anfu-scene-name { font-size: 12px; font-weight: 600; line-height: 1.3; }
+.anfu-scene-card .anfu-scene-desc { display: none; }
+/* AB choice picker (in repair wizard) */
+.anfu-ab-picker {
+  display: flex; gap: 8px; margin-top: 10px; align-items: center;
 }
-.anfu-scene-badge.A { background: #FFF0EC; color: var(--coral); }
-.anfu-scene-badge.B { background: #F0E8FE; color: #8B6DD8; }
+.anfu-ab-label { font-size: 12px; color: var(--text-sub); flex-shrink: 0; }
+.anfu-ab-chip {
+  flex: 1; padding: 8px 0; border-radius: 10px; border: 1.5px solid #E8E3DD;
+  background: var(--card); text-align: center; font-size: 12px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s; color: var(--text-sub);
+}
+.anfu-ab-chip.selected-a { background: #FFF0EC; color: #E8735A; border-color: #E8735A; font-weight: 700; }
+.anfu-ab-chip.selected-b { background: #FFF8E8; color: #E8A850; border-color: #E8A850; font-weight: 700; }
 
 .anfu-back-btn {
   border: none; background: var(--card); padding: 6px 14px; border-radius: 16px;
@@ -1574,6 +1756,45 @@ body {
 .anfu-repair-step-body { font-size: 14px; line-height: 1.7; color: var(--text); }
 .anfu-repair-step-tip { font-size: 12px; color: var(--text-light); margin-top: 6px; }
 .anfu-scene-count { font-size: 12px; color: var(--text-light); margin-bottom: 10px; text-align: center; }
+
+/* Scene-customized repair output */
+.anfu-repair-scene-header {
+  font-size: 14px; margin-bottom: 12px; color: var(--text);
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.anfu-repair-apology-card {
+  background: linear-gradient(135deg, #FFF5F2, #FFF0EC);
+  border: 1.5px solid rgba(232,115,90,0.2);
+  border-radius: var(--radius); padding: 14px; margin-bottom: 14px;
+}
+.anfu-repair-apology-label {
+  font-size: 12px; font-weight: 700; color: var(--coral);
+  margin-bottom: 8px; letter-spacing: 0.5px;
+}
+.anfu-repair-apology-text {
+  font-size: 15px; line-height: 1.8; color: var(--text);
+  font-weight: 500; letter-spacing: 0.3px;
+}
+.anfu-repair-apology-note {
+  font-size: 11px; color: var(--text-light); margin-top: 8px;
+  padding-top: 8px; border-top: 1px dashed rgba(232,115,90,0.15);
+}
+.anfu-repair-flow-title {
+  font-size: 13px; font-weight: 600; color: var(--text-sub);
+  margin-bottom: 10px;
+}
+.anfu-repair-prevent {
+  margin-top: 8px; padding: 10px 12px;
+  background: #F5F9FF; border-radius: var(--radius-sm);
+  border: 1px solid rgba(91,155,213,0.1);
+}
+.anfu-repair-prevent-title {
+  font-size: 12px; font-weight: 600; color: var(--blue); margin-bottom: 6px;
+}
+.anfu-repair-prevent-item {
+  font-size: 12px; color: var(--text-sub); line-height: 1.6;
+  padding: 2px 0;
+}
 
 /* ========== VIP ========== */
 .vip-upgrade-banner {
@@ -1882,18 +2103,60 @@ body {
 
     <!-- LIGHT ALERT (Level-1): 全屏黄色预警 — moved to body level -->
 
-    <!-- ALERT STATE (auto-triggered) — Layer 2: 重度提醒 -->
+    <!-- HEAVY ALERT — Layer 2: 红色全屏预警（两步骤：离开→深呼吸） -->
     <div class="guard-alert" id="guardAlert">
-      <div class="alert-inner" id="alertInner">
-        <div class="alert-breathe-circle" id="alertBreatheCircle">
-          <div class="alert-breathe-inner" id="alertBreatheInner"></div>
+      <!-- Step 1: 先离开 -->
+      <div class="ha-step" id="haStep1" style="display:none">
+        <div class="ha-leave-icon">🚶</div>
+        <div class="ha-leave-title">先离开当前环境</div>
+        <div class="ha-leave-sub">转身，走几步，给自己和孩子之间<br>留出几分钟缓冲空间</div>
+        <div class="ha-leave-progress" id="haLeaveProgress">
+          <div class="ha-leave-dot"></div>
+          <div class="ha-leave-dot"></div>
+          <div class="ha-leave-dot"></div>
+          <div class="ha-leave-dot"></div>
         </div>
-        <div class="alert-text" id="alertText">先停下来</div>
-        <div class="alert-sub" id="alertSub">你已经感觉到了，这就是自我觉察<br>跟着呼吸，让情绪自然流过</div>
-        <div class="alert-hint" id="alertHint"></div>
-        <div class="alert-actions" id="alertActions" style="display:none">
-          <button class="alert-btn primary" onclick="resumeGuarding()">✅ 我冷静下来了</button>
-          <button class="alert-btn ghost" onclick="stopGuarding()">⏹️ 结束守护</button>
+      </div>
+      <!-- Step 2: 跟着呼吸 -->
+      <div class="ha-step" id="haStep2" style="display:none">
+        <div class="ha-breathe-scene" id="haBreatheScene">
+          <svg viewBox="0 0 200 260">
+            <defs>
+              <radialGradient id="haAuraGrad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="rgba(255,140,110,0.3)"/>
+                <stop offset="100%" stop-color="rgba(255,140,110,0)"/>
+              </radialGradient>
+            </defs>
+            <!-- Breathing aura -->
+            <circle cx="100" cy="130" r="95" class="ha-aura-inner" id="haAuraInner"/>
+            <circle cx="100" cy="130" r="90" class="ha-aura" id="haAuraOuter">
+              <animateTransform attributeName="transform" type="rotate" from="0 100 130" to="360 100 130" dur="20s" repeatCount="indefinite"/>
+            </circle>
+            <!-- Person — legs -->
+            <path d="M70 210 L60 250 M130 210 L140 250" class="ha-legs" stroke-linecap="round" stroke-width="10"/>
+            <!-- Person — torso -->
+            <ellipse cx="100" cy="150" rx="30" ry="50" class="ha-torso" id="haTorso"/>
+            <!-- Person — shoulders -->
+            <path d="M55 115 Q100 95 145 115" class="ha-shoulder" id="haShoulder" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="14" stroke-linecap="round"/>
+            <!-- Person — arms -->
+            <path d="M60 118 Q45 140 50 165" class="ha-arm" id="haArmL"/>
+            <path d="M140 118 Q155 140 150 165" class="ha-arm" id="haArmR"/>
+            <!-- Person — head -->
+            <circle cx="100" cy="62" r="30" class="ha-head"/>
+            <!-- Heart indicator -->
+            <text x="100" y="158" text-anchor="middle" class="ha-heart-icon" id="haHeartIcon">♥</text>
+          </svg>
+        </div>
+        <div class="ha-breathe-text" id="haBreatheText">跟着我一起呼吸</div>
+        <div class="ha-breathe-hint" id="haBreatheHint"></div>
+        <div class="ha-breathe-progress" id="haBreatheProgress">
+          <div class="ha-breathe-dot"></div>
+          <div class="ha-breathe-dot"></div>
+          <div class="ha-breathe-dot"></div>
+        </div>
+        <div class="ha-actions" id="haActions" style="display:none">
+          <button class="ha-btn primary" onclick="resumeGuarding()">✅ 我冷静下来了</button>
+          <button class="ha-btn ghost" onclick="stopGuarding()">⏹️ 结束守护</button>
         </div>
       </div>
     </div>
@@ -1908,6 +2171,11 @@ body {
 
     <!-- Category tabs -->
     <div class="anfu-cat-tabs" id="anfuCatTabs"></div>
+
+    <!-- Search bar -->
+    <div class="anfu-search-bar">
+      <input class="anfu-search-input" id="anfuSceneSearch" type="text" placeholder="🔍 搜索场景（如：写作业、磨蹭、顶嘴…）" oninput="filterAnfuScenes()">
+    </div>
 
     <!-- Scene list -->
     <div class="anfu-scene-list" id="anfuSceneList"></div>
@@ -1925,7 +2193,7 @@ body {
         <select id="anfuRepairScene" class="anfu-select" onchange="onRepairSceneChange()">
           <option value="">选择发火场景...</option>
         </select>
-        <select id="anfuRepairAge" class="anfu-select" style="max-width:130px">
+        <select id="anfuRepairAge" class="anfu-select" style="max-width:130px" onchange="onRepairSceneChange()">
           <option value="3-6">👶 幼儿 3-6岁</option>
           <option value="7-12" selected>🧒 儿童 7-12岁</option>
           <option value="13+">🧑 青少年 13+岁</option>
@@ -2043,6 +2311,18 @@ body {
       <div class="journal-search-bar">
         <input class="journal-search-input" id="journalSearch" type="text" placeholder="🔍 搜索记录（情绪、内容、日期…）" oninput="filterJournalEntries()">
       </div>
+      <div class="journal-legend" id="journalLegend">
+        <div class="journal-legend-title">📖 图标说明：</div>
+        <div class="journal-legend-row">
+          <span class="journal-legend-item"><span>🍃</span> 有点烦躁</span>
+          <span class="journal-legend-item"><span>🔥</span> 明显生气</span>
+          <span class="journal-legend-item"><span>💢</span> 快要失控</span>
+          <span class="journal-legend-item"><span>💥</span> 已经爆发</span>
+          <span class="journal-legend-divider"></span>
+          <span class="journal-legend-item"><span class="journal-legend-ab" style="background:#FFF0EC;color:#E8735A">A</span> 孩子犯错</span>
+          <span class="journal-legend-item"><span class="journal-legend-ab" style="background:#FFF8E8;color:#E8A850">B</span> 家长迁怒</span>
+        </div>
+      </div>
       <div class="journal-list" id="journalList">
         <div class="journal-empty">还没有记录</div>
       </div>
@@ -2121,8 +2401,8 @@ body {
   <!-- ============== TAB: 训练 ============== -->
   <div class="view" id="viewTrain">
     <div class="train-header">
-      <h2>🎯 抗挫训练</h2>
-      <p>每天5分钟，帮孩子（也帮自己）学会应对挫折</p>
+      <h2>🎯 情绪训练</h2>
+      <p>每天5分钟，学会管理情绪，修复亲子关系，告别养育内疚</p>
     </div>
 
     <!-- Training streak -->
@@ -2213,8 +2493,8 @@ body {
   padding:14px 20px;border-radius:24px;font-size:14px;font-weight:700;
   box-shadow:0 4px 20px rgba(107,76,30,0.5);cursor:pointer;
   border:none;display:block;"
-  onclick="showColdViolenceOverlay('test cold violence','烦死了')">
-  🗣️ 语义预警
+  onclick="showColdViolenceOverlay('test cold violence','我不要你了')">
+  🗣️ 冷暴力预警
 </div>
 
 <script>
@@ -2805,7 +3085,12 @@ const sceneLibrary = [
     bad:'你看看这衣服！刚换的！洗都洗不掉！', good:'哇，看来你玩得很开心！泥巴和颜料说明你度过了一段充实的时光。来，脱下来我教你用去渍皂。',
     why:'衣服脏=玩得尽兴。为衣服骂孩子，你其实在告诉他"衣服比你重要"。',
     repair:'对不起，我刚才是心疼衣服。其实你玩得开心比衣服重要得多。',
-    prevent:['外出玩耍时穿"不怕脏"的衣服','教孩子基础的去渍方法（参与善后）'] }
+    prevent:['外出玩耍时穿"不怕脏"的衣服','教孩子基础的去渍方法（参与善后）'] },
+  // ======================== 其他 (用户自定义) ========================
+  { id:'custom', cat:'其他', icon:'✏️', name:'其他情况（自行描述）', ab:'A',
+    scene:'', bad:'', good:'', why:'',
+    repair:'对不起，我不该对你发火。不管发生了什么，我都应该用更好的方式跟你沟通。',
+    prevent:[] }
 ];
 
 /* ========== REPAIR / APOLOGY SCRIPTS ========== */
@@ -2836,6 +3121,28 @@ const repairScripts = {
         template: '爸爸/妈妈会努力不发火的。如果我再忘了，你提醒我好吗？我们来拉钩！',
         tip: '拉钩、盖章这些仪式对幼儿有巨大力量。让孩子参与"监督"给 ta 掌控感。'
       }
+    ],
+    stepsB: [
+      {
+        title: '承认：蹲下来，平视孩子',
+        template: '宝宝，你_____了，但爸爸/妈妈今天反应太大了。平时爸爸/妈妈不会这样凶的，是爸爸/妈妈今天自己心情不好。',
+        tip: '不否定孩子的行为，但把"过度的火气"揽到自己身上。幼儿能感受到语气里的自责。'
+      },
+      {
+        title: '道歉：认领自己的原因',
+        template: '对不起，是爸爸/妈妈自己今天太累了/心情不好，才对你发这么大的火。你是我最爱的宝贝。',
+        tip: '明确告诉幼儿"发火的原因是我自己"，而不是"你惹的"。减少孩子的自责和恐惧。'
+      },
+      {
+        title: '修复：安抚被吓到的孩子',
+        template: '你是不是被吓到了？来，抱一下。你心里一定很委屈吧？',
+        tip: '幼儿可能不理解复杂的解释，但一个拥抱 + 承认ta的感受，比任何语言都有效。'
+      },
+      {
+        title: '约定：承诺自我觉察',
+        template: '以后爸爸/妈妈如果觉得心情不好，会先告诉你"我需要抱一下"。你也帮我记得提醒我，拉钩！',
+        tip: '给孩子一个"帮助父母"的角色，让 ta 从被发火的对象变成关心父母的伙伴。'
+      }
     ]
   },
   '7-12': {
@@ -2862,6 +3169,28 @@ const repairScripts = {
         template: '下次如果再遇到____的情况，你觉得我们怎么做会更好？我们一起想个办法。',
         tip: '邀请孩子一起制定规则。ta 参与制定的规则，执行率比单方面命令高 3 倍。'
       }
+    ],
+    stepsB: [
+      {
+        title: '承认：区分行为和反应',
+        template: '我仔细想了想——你_____确实让我有点着急，但说实话，平时这件事我不会发这么大火的。今天是我自己的状态没控制好。',
+        tip: '承认孩子的行为真实存在，但坦承"平时能忍住、今天没收住"。这是最关键的区别。'
+      },
+      {
+        title: '道歉：承担过度反应',
+        template: '对不起，妈妈/爸爸今天因为自己的烦心事，对你反应过头了。你的行为没严重到值得我发那么大火，这对你不公平。',
+        tip: '让孩子明白：不是我做的有多过分，是爸妈今天"情绪容器"太满了。'
+      },
+      {
+        title: '修复：给孩子"审判权"',
+        template: '你刚才是不是觉得很委屈——明明跟平时差不多的事，今天却成了我的出气筒？现在你可以说出来，我会好好听。',
+        tip: '"跟平时差不多"这句话极重要：帮孩子把自己从自责中摘出来。'
+      },
+      {
+        title: '约定：建立情绪预警',
+        template: '以后我如果觉得自己情绪不对劲——比如特别累、特别烦的时候——会提前跟你说："我现在状态不好，等一下再聊_____的事"。这样你能有个预期，也能提醒我。',
+        tip: '把"我会改"变成具体的操作。孩子知道预警信号是什么，就减少了突然被骂的恐惧。'
+      }
     ]
   },
   '13+': {
@@ -2887,6 +3216,28 @@ const repairScripts = {
         title: '约定：共同成长',
         template: '我在学习控制情绪，你也一样。我们都不是完美的，但我们可以一起变得更好。',
         tip: '把"我是大人你要听我的"变成"我们一起成长"。青春期最渴望的就是被当大人对待。'
+      }
+    ],
+    stepsB: [
+      {
+        title: '承认：把行为和反应分开',
+        template: '我今天情绪失控了。你_____确实让我不太舒服，但说实话，如果今天我自己状态正常，我不会这样爆发。这是我的问题。',
+        tip: '青少年最反感"都是你的错"也最反感"都是我的错"的虚伪。诚实区分行为和反应，反而赢得信任。'
+      },
+      {
+        title: '道歉：为过度反应负责',
+        template: '我向你道歉。你今天_____的程度，不值得我发那么大的火。我把自己今天积累的压力和情绪转嫁给你了，这对你不公平。',
+        tip: '用"不值得"而不是"你不该"——前者是承认自己反应过度，后者容易变成指责。'
+      },
+      {
+        title: '修复：承认对方感受的合理性',
+        template: '你心里一定觉得很冤——明明跟平时差不多的事，今天却成了我的出气筒。如果你想说什么，或者不想说，我都理解。',
+        tip: '"觉得冤"这个词精准描述了B类发火时孩子的感受。说出来比"对不起"更能让对方感到被理解。'
+      },
+      {
+        title: '约定：建立双向预警',
+        template: '以后我觉得自己状态不好——比如工作压力大、很烦躁的时候——会直接告诉你"我今天情绪不太好，容易被激怒"。你也可以在我状态不对的时候直接说"你现在是不是心情不好"，我不会生气。',
+        tip: '把情绪管理变成双向的。青少年最需要的是被当成人对待，而不是被当成需要哄的小孩。'
       }
     ]
   }
@@ -3999,7 +4350,7 @@ function computeCalibratedThresholds() {
 /* ========== STOP GUARDING ========== */
 async function stopGuarding() {
   guarding = false;
-  alertActive = false;
+  _stopHeavyBreathe(); alertActive = false;
 
   // Stop parallel semantic channel
   stopSemanticPolling();
@@ -4035,7 +4386,9 @@ async function stopGuarding() {
   document.getElementById('monitorZoneText').className = 'monitor-zone-text';
   document.getElementById('monitorZoneText').textContent = '平静守护中';
   document.getElementById('monitorStatus').textContent = '正在倾听...';
-  document.getElementById('alertActions').style.display = 'none';
+  document.getElementById('haActions').style.display = 'none';
+  document.getElementById('haStep1').style.display = 'none';
+  document.getElementById('haStep2').style.display = 'none';
 
   _resetAsrHealth();
   resetGauges();
@@ -4708,7 +5061,7 @@ function monitorLoop() {
     if (heavyZoneTimer) { clearTimeout(heavyZoneTimer); heavyZoneTimer = null; }
     lightZoneStart = 0;
     heavyZoneStart = 0;
-    if (lightAlertActive) hideLightAlert();
+    // Layer 1 活跃时不自动关闭，只由用户手动点击按钮或60秒超时关闭
   } else {
     // GREEN ZONE — calm
     orbRing.className = 'monitor-orb-ring';
@@ -4722,7 +5075,7 @@ function monitorLoop() {
     if (heavyZoneTimer) { clearTimeout(heavyZoneTimer); heavyZoneTimer = null; }
     lightZoneStart = 0;
     heavyZoneStart = 0;
-    if (lightAlertActive) hideLightAlert();
+    // Layer 1 活跃时不自动关闭，只由用户手动点击按钮或60秒超时关闭
   }
 
   monitorAnimId = requestAnimationFrame(monitorLoop);
@@ -5682,9 +6035,9 @@ function triggerSemanticAlert(text, keyword) {
   }
   const joint = computeJointScore(_lastAngerProb || 0, semResult);
 
-  // Override: if called directly with a keyword, escalate more aggressively
+  // Override: if called directly with a keyword, follow cold-violence rule
   if (keyword && semResult.severity !== 'none') {
-    joint.decision = semResult.isCold ? 'cold_violence' : 'layer2_confirm';
+    joint.decision = (_lastAngerProb < 0.7) ? 'cold_violence' : 'layer2_confirm';
   }
 
   triggerSemanticAlertV2(text || keyword, semResult, joint);
@@ -5703,7 +6056,7 @@ function debugShowOverlay(source, meta) {
   const old = document.getElementById('dynamicOverlay');
   if (old) old.remove();
   lightAlertActive = false;
-  heavyAlertActive = false;
+  _stopHeavyBreathe(); heavyAlertActive = false;
 
   // Vibrate: repeating pulse pattern until user dismisses
   _startRepeatingVibrate();
@@ -5777,7 +6130,7 @@ function showColdViolenceOverlay(text, keyword) {
   const old = document.getElementById('dynamicOverlay');
   if (old) old.remove();
   lightAlertActive = false;
-  heavyAlertActive = false;
+  _stopHeavyBreathe(); heavyAlertActive = false;
   currentOverlayType = 'none';
 
   // 清除 pending 定时器，防止冷暴力显示前已设置的定时器误触发
@@ -6279,60 +6632,31 @@ function computeJointScore(acousticProb, semanticResult) {
   // Joint score: weighted average
   const joint = acousticProb * aw + semNorm * sw;
 
-  // Decision matrix
+  // ── 决策矩阵 ──
+  // 核心规则：语气平静 + 任何语义触发 = 冷暴力（蓝屏）
+  // "语气平静" = acousticProb < 0.7
+  // 注意：severity === 'none' 时纯声学通道由 monitorLoop → triggerLightAlert 独立处理
   let decision = 'none';
   let reason = '';
 
-  if (semanticResult.isCold) {
-    // Cold violence confirmed: even if acoustic is low, this is serious
+  if (semanticResult.severity !== 'none') {
+    // 语义通道触发了（任何类型的关键词）
     if (acousticProb >= 0.7) {
-      decision = 'cold_to_explode';
-      reason = '冷暴力+声学爆发 → 升级干预';
+      // 语气激动 + 语义 → 按严重程度升级（红屏）
+      if (semanticResult.isCold) {
+        decision = 'cold_to_explode';
+        reason = '冷暴力+声学爆发 → 升级干预';
+      } else {
+        decision = 'layer2_confirm';
+        reason = '声学激动 + 语义触发 → 升级 Layer 2';
+      }
     } else {
+      // 语气平静 + 任何语义触发 → 统一为冷暴力（蓝屏）
       decision = 'cold_violence';
-      reason = '冷暴力确认（语气平静但话语伤人）';
-    }
-  } else if (semanticResult.severity === 'heavy' || semanticResult.score >= 5) {
-    // Strong semantic signal
-    if (acousticProb >= 0.7) {
-      decision = 'layer2_confirm';
-      reason = '声学+语义双重确认 → 升级 Layer 2';
-    } else if (acousticProb >= 0.4) {
-      decision = 'layer2_confirm';
-      reason = '语义强信号 + 声学中等 → 升级 Layer 2';
-    } else {
-      decision = 'layer1_only';
-      reason = '语义强信号但声学低 → Layer 1 提醒';
-    }
-  } else if (semanticResult.severity === 'moderate') {
-    if (acousticProb >= 0.7) {
-      decision = 'layer2_confirm';
-      reason = '声学高 + 语义中等 → 升级 Layer 2';
-    } else if (joint >= 0.5) {
-      decision = 'layer1_only';
-      reason = '联合分数中等 → Layer 1 提醒';
-    } else {
-      decision = 'none';
-      reason = '联合分数不足 → 不触发';
-    }
-  } else if (semanticResult.severity === 'mild') {
-    if (acousticProb >= 0.7) {
-      decision = 'layer1_only';
-      reason = '声学高但语义弱 → 仅语气提醒';
-    } else {
-      decision = 'none';
-      reason = '信号都弱 → 不触发';
-    }
-  } else {
-    // semanticResult.severity === 'none'
-    if (acousticProb >= 0.7) {
-      decision = 'layer1_only';
-      reason = '纯声学信号 → Layer 1 语气提醒';
-    } else {
-      decision = 'none';
-      reason = '无信号 → 正常';
+      reason = '语气平静但话语伤人 → 冷暴力';
     }
   }
+  // severity === 'none' → 纯声学 / 无信号，语义通道不决策
 
   return {
     jointScore: Math.round(joint * 100) / 100,
@@ -6445,7 +6769,6 @@ function updateASRStatus(status, message) {
 let currentTriggerId = 0;
 async function triggerHeavyAlert(type) {
   if (alertActive || alertCooldown) return;
-  // 冷静窗口：如果在窗口内再触发，记一次失败
   _startCalmWindow();
   alertActive = true;
   heavyAlertActive = true;
@@ -6456,77 +6779,149 @@ async function triggerHeavyAlert(type) {
   // Log trigger event to DB
   currentTriggerId = await logTriggerEvent(type);
 
-  // Show heavy alert (full screen red)
+  // Show heavy alert — full screen red
   document.getElementById('guardAlert').classList.add('active');
   playAlertChime();
 
-  // Strong vibration pattern
-  _stopRepeatingVibrate(); // Stop Layer 1 pulse before Layer 2
-  if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 500]);
+  // Strong vibration pattern — continuous 60s pulse
+  _stopRepeatingVibrate();
+  _startRepeatingVibrate(60000);
 
-  // Start 4-7-8 breathing guide
+  // ── Step 1: 先离开（2.5秒后自动过渡到 Step 2）──
   startHeavyBreathingGuide();
 }
 
-/* ========== 4-7-8 BREATHING GUIDE (重度提醒引导) ========== */
-function startHeavyBreathingGuide() {
-  const text = document.getElementById('alertText');
-  const sub = document.getElementById('alertSub');
-  const hint = document.getElementById('alertHint');
-  const circle = document.getElementById('alertBreatheCircle');
-  const inner = document.getElementById('alertBreatheInner');
-  const actions = document.getElementById('alertActions');
-  actions.style.display = 'none';
+/* ── Cleanup helper: stop breathing timer & reset scene ── */
+function _stopHeavyBreathe() {
+  if (_haBreatheTimer) { clearTimeout(_haBreatheTimer); _haBreatheTimer = null; }
+  var scene = document.getElementById('haBreatheScene');
+  if (scene) scene.className = 'ha-breathe-scene';
+}
 
-  text.textContent = '离开当前环境';
-  sub.innerHTML = '先离开，转身走几步<br>跟着呼吸圆圈，让情绪降温';
-  hint.textContent = '跟着圆圈一起呼吸...';
+/* ========== HEAVY BREATHING GUIDE — 两步流程 ========== */
+let _haBreatheTimer = null;
+
+function startHeavyBreathingGuide() {
+  // Clean up any previous state
+  if (_haBreatheTimer) { clearTimeout(_haBreatheTimer); _haBreatheTimer = null; }
+
+  const step1 = document.getElementById('haStep1');
+  const step2 = document.getElementById('haStep2');
+  const actions = document.getElementById('haActions');
+  const scene = document.getElementById('haBreatheScene');
+
+  step1.style.display = 'flex';
+  step2.style.display = 'none';
+  actions.style.display = 'none';
+  scene.className = 'ha-breathe-scene';
+
+  // ── Step 1: 倒计时进度点 ──
+  const dots = document.querySelectorAll('#haLeaveProgress .ha-leave-dot');
+  dots.forEach(function(d) { d.classList.remove('active'); });
+  let dotIdx = 0;
+  function tickDot() {
+    if (!heavyAlertActive) return;
+    if (dotIdx < dots.length) {
+      dots[dotIdx].classList.add('active');
+      dotIdx++;
+      _haBreatheTimer = setTimeout(tickDot, 600);
+    } else {
+      // All dots filled → transition to Step 2
+      _transitionToStep2();
+    }
+  }
+  _haBreatheTimer = setTimeout(tickDot, 300);
+}
+
+function _transitionToStep2() {
+  if (!heavyAlertActive) return;
+  if (_haBreatheTimer) { clearTimeout(_haBreatheTimer); _haBreatheTimer = null; }
+
+  const step1 = document.getElementById('haStep1');
+  const step2 = document.getElementById('haStep2');
+
+  // Fade out Step 1, fade in Step 2
+  step1.style.animation = 'none';
+  step1.offsetHeight; // force reflow
+  step1.style.opacity = '0';
+  step1.style.transition = 'opacity 0.4s ease';
+
+  setTimeout(function() {
+    if (!heavyAlertActive) return;
+    step1.style.display = 'none';
+    step2.style.display = 'flex';
+    _runBreathingCycles();
+  }, 400);
+}
+
+function _runBreathingCycles() {
+  if (!heavyAlertActive) return;
+  const scene = document.getElementById('haBreatheScene');
+  const text = document.getElementById('haBreatheText');
+  const hint = document.getElementById('haBreatheHint');
+  const dots = document.querySelectorAll('#haBreatheProgress .ha-breathe-dot');
+  const actions = document.getElementById('haActions');
+
+  // Reset
+  dots.forEach(function(d) { d.classList.remove('done'); });
+  actions.style.display = 'none';
+  scene.className = 'ha-breathe-scene';
 
   let cycle = 0;
-  let phase = 'inhale'; // inhale, hold, exhale, done
+  const totalCycles = 3;
+
+  function setPhase(phaseName) {
+    scene.className = 'ha-breathe-scene ' + phaseName;
+  }
 
   function step() {
     if (!heavyAlertActive) return;
-    if (cycle >= 3) {
-      // Done 3 rounds
+
+    if (cycle >= totalCycles) {
+      // All 3 rounds done
+      setPhase('exhale');
       hint.textContent = '';
       actions.style.display = 'flex';
-      text.textContent = '做得很好';
-      sub.innerHTML = '你成功刹住了车<br>情绪已降温，接下来由你掌控';
+      text.textContent = '做得很好 👏';
+      document.getElementById('haBreatheText').style.marginBottom = '0';
       logIntervention(currentTriggerId, 'breath_completed', true);
       return;
     }
 
-    if (phase === 'inhale') {
-      // 4 seconds inhale
-      hint.textContent = '慢慢吸气... (4秒)';
-      circle.style.transition = 'transform 4s ease-in-out';
-      inner.style.transition = 'transform 4s ease-in-out';
-      circle.style.transform = 'scale(1.2)';
-      inner.style.transform = 'scale(1.5)';
-      phase = 'hold';
-      setTimeout(step, 4200);
-    } else if (phase === 'hold') {
-      // 7 seconds hold
-      hint.textContent = '屏住呼吸... (7秒)';
-      circle.style.transition = 'transform 7s ease-in-out';
-      // Keep scale
-      phase = 'exhale';
-      setTimeout(step, 7200);
-    } else if (phase === 'exhale') {
-      // 8 seconds exhale
-      hint.textContent = '缓缓呼气... (8秒)';
-      circle.style.transition = 'transform 8s ease-in-out';
-      inner.style.transition = 'transform 8s ease-in-out';
-      circle.style.transform = 'scale(1)';
-      inner.style.transform = 'scale(1)';
-      phase = 'inhale';
-      cycle++;
-      setTimeout(step, 8200);
-    }
+    // ── INHALE 4s ──
+    setPhase('inhale');
+    text.textContent = '吸气';
+    hint.textContent = '用鼻子慢慢吸，感受腹部鼓起... (4秒)';
+
+    _haBreatheTimer = setTimeout(function() {
+      if (!heavyAlertActive) return;
+      // ── HOLD 7s ──
+      setPhase('hold');
+      text.textContent = '屏气';
+      hint.textContent = '让氧气在身体里停留... (7秒)';
+
+      _haBreatheTimer = setTimeout(function() {
+        if (!heavyAlertActive) return;
+        // ── EXHALE 8s ──
+        setPhase('exhale');
+        text.textContent = '呼气';
+        hint.textContent = '用嘴巴缓缓呼出，感受身体放松... (8秒)';
+
+        // Mark this cycle's dot as done
+        if (dots[cycle]) dots[cycle].classList.add('done');
+
+        cycle++;
+
+        _haBreatheTimer = setTimeout(function() {
+          if (!heavyAlertActive) return;
+          step();
+        }, 8200);
+      }, 7200);
+    }, 4200);
   }
 
-  setTimeout(step, 600);
+  // Small delay to let the fade-in complete before starting
+  _haBreatheTimer = setTimeout(step, 500);
 }
 
 function playAlertChime() {
@@ -6594,6 +6989,9 @@ function resumeGuarding() {
   alertCooldown = true;
   logIntervention(currentTriggerId, 'resumed_guarding', false);
   document.getElementById('guardAlert').classList.remove('active');
+  document.getElementById('haStep1').style.display = 'none';
+  document.getElementById('haStep2').style.display = 'none';
+  document.getElementById('haActions').style.display = 'none';
   resetGauges();
   document.getElementById('monitorOrb').className = 'monitor-orb';
   document.getElementById('monitorOrbRing').className = 'monitor-orb-ring';
@@ -6614,7 +7012,7 @@ function resumeGuarding() {
   lightZoneStart = 0;  heavyZoneStart = 0;
   if (lightZoneTimer) { clearTimeout(lightZoneTimer); lightZoneTimer = null; }
   if (heavyZoneTimer) { clearTimeout(heavyZoneTimer); heavyZoneTimer = null; }
-  lightAlertActive = false; heavyAlertActive = false;
+  lightAlertActive = false; _stopHeavyBreathe(); heavyAlertActive = false;
   // 启动冷静窗口：15分钟内不再触发 = 止怒成功
   _dismissStartCalmWindow();
   // 20 second cooldown
@@ -6626,9 +7024,12 @@ function resumeGuarding() {
 
 async function logAndResume() {
   alertActive = false;
-  heavyAlertActive = false;
+  _stopHeavyBreathe(); heavyAlertActive = false;
   alertCooldown = true;
   document.getElementById('guardAlert').classList.remove('active');
+  document.getElementById('haStep1').style.display = 'none';
+  document.getElementById('haStep2').style.display = 'none';
+  document.getElementById('haActions').style.display = 'none';
 
   // Log intervention
   logIntervention(currentTriggerId, 'logged_and_resumed', true);
@@ -6663,7 +7064,7 @@ async function logAndResume() {
   lightZoneStart = 0;  heavyZoneStart = 0;
   if (lightZoneTimer) { clearTimeout(lightZoneTimer); lightZoneTimer = null; }
   if (heavyZoneTimer) { clearTimeout(heavyZoneTimer); heavyZoneTimer = null; }
-  lightAlertActive = false; heavyAlertActive = false;
+  lightAlertActive = false; _stopHeavyBreathe(); heavyAlertActive = false;
   _dismissStartCalmWindow();
   setTimeout(()=>{ alertCooldown = false; }, 20000);
   updateStreakDisplaySync();
@@ -6676,10 +7077,10 @@ async function logAndResume() {
 }
 
 /* ========== ANFU VIEW (Layer 2: 分场景修复安抚) ========== */
-let anfuState = { cat: '全部', selectedScene: null };
+let anfuState = { cat: '全部', selectedScene: null, search: '' };
 
 function renderAnfuView() {
-  const cats = ['全部', '学习相关', '习惯相关', '情绪相关', '生活相关'];
+  const cats = ['全部', '学习相关', '习惯相关', '情绪相关', '生活相关', '其他'];
   const tabs = document.getElementById('anfuCatTabs');
   tabs.innerHTML = cats.map(c =>
     `<button class="anfu-cat-tab${c===anfuState.cat?' active':''}" onclick="switchAnfuCat('${c}')">${c}</button>`
@@ -6689,7 +7090,8 @@ function renderAnfuView() {
   renderAnfuSceneList();
 }
 
-function switchAnfuCat(cat) { anfuState.cat = cat; anfuState.selectedScene = null; renderAnfuView(); }
+function switchAnfuCat(cat) { anfuState.cat = cat; anfuState.selectedScene = null; anfuState.search = ''; const s = document.getElementById('anfuSceneSearch'); if (s) s.value = ''; renderAnfuView(); }
+function filterAnfuScenes() { anfuState.search = (document.getElementById('anfuSceneSearch').value || '').trim(); renderAnfuSceneList(); }
 
 function buildRepairSceneSelect() {
   const sel = document.getElementById('anfuRepairScene');
@@ -6698,7 +7100,7 @@ function buildRepairSceneSelect() {
   cats.forEach(cat => {
     html += '<optgroup label="'+cat+'">';
     sceneLibrary.filter(s => s.cat === cat).forEach(s => {
-      html += '<option value="'+s.id+'">'+s.icon+' '+s.name+' ['+s.ab+'类]</option>';
+      html += '<option value="'+s.id+'">'+s.icon+' '+s.name+'</option>';
     });
     html += '</optgroup>';
   });
@@ -6719,29 +7121,173 @@ function renderRepairOutput(sceneId, age) {
   if (!scene || !data) return;
   const out = document.getElementById('anfuRepairOutput');
   out.style.display = 'block';
-  out.innerHTML = '<div style="font-size:13px;font-weight:600;margin-bottom:10px;">📋 '+scene.icon+' '+scene.name+' · '+data.label+'</div>' +
-    data.steps.map((s, i) =>
-      '<div class="anfu-repair-step">'+
-        '<div class="anfu-repair-step-title">'+(i+1)+'. '+s.title+'</div>'+
-        '<div class="anfu-repair-step-body">'+esc(s.template)+'</div>'+
-        '<div class="anfu-repair-step-tip">💡 '+esc(s.tip)+'</div>'+
+
+  // Handle custom scene: override scene name with user's text
+  const isCustom = (sceneId === 'custom' && window._customSceneText);
+  const displayScene = isCustom ? {
+    ...scene,
+    name: '你的情况',
+    repair: '对不起，我刚才太冲动了。不管发生了什么，我都不该用那种方式对你。我们好好聊聊，把这件事说开好吗？'
+  } : scene;
+
+  // Store for dynamic AB switching
+  window._anfuRepairScene = displayScene;
+  window._anfuRepairData = data;
+  window._anfuRepairAge = age;
+  window._anfuRepairSceneId = sceneId;
+  _anfuRepairPending = null;
+
+  // Scene header — for custom, show user's text as sub-description
+  const headerHTML = isCustom
+    ? '<div class="anfu-repair-scene-header" style="flex-direction:column;align-items:flex-start;gap:6px;">' +
+        '<div style="display:flex;align-items:center;gap:8px;">' +
+          displayScene.icon + ' <strong>' + esc(displayScene.name) + '</strong> · <span style="color:var(--text-sub);font-size:13px;">' + data.label + '</span>' +
+        '</div>' +
+        '<div class="anfu-repair-custom-desc" style="font-size:12px;color:var(--text-sub);background:#F8F5F0;padding:8px 12px;border-radius:8px;width:100%;box-sizing:border-box;">📝 ' + esc(window._customSceneText) + '</div>' +
       '</div>'
-    ).join('') +
-    '<button class="btn-train-primary done" style="margin-top:8px;" onclick="saveRepairFromAnfu(\''+sceneId+'\',\''+age+'\')">✅ 记录这次修复</button>';
+    : '<div class="anfu-repair-scene-header">' +
+        displayScene.icon + ' <strong>' + esc(displayScene.name) + '</strong> · <span style="color:var(--text-sub);font-size:13px;">' + data.label + '</span>' +
+      '</div>';
+
+  // Apology card — for custom, show simplified version without scene-specific text
+  const apologyHTML = isCustom
+    ? '<div class="anfu-repair-apology-card" id="anfuRepairApologyCard" style="opacity:0.75;">' +
+        '<div class="anfu-repair-apology-label">💚 通用道歉（可自行调整）</div>' +
+        '<div class="anfu-repair-apology-text" id="anfuRepairApologyText">' + esc(displayScene.repair) + '</div>' +
+        '<div class="anfu-repair-apology-note" id="anfuRepairApologyNote">👆 根据你描述的情况，自行把"那件事"换成具体内容</div>' +
+      '</div>'
+    : '<div class="anfu-repair-apology-card" id="anfuRepairApologyCard">' +
+        '<div class="anfu-repair-apology-label">💚 场景专属道歉（场景触发型）</div>' +
+        '<div class="anfu-repair-apology-text" id="anfuRepairApologyText">' + esc(scene.repair) + '</div>' +
+        '<div class="anfu-repair-apology-note" id="anfuRepairApologyNote">👆 这句话是专门为「' + esc(scene.name) + '」这个场景定制的，直接照着说就行</div>' +
+      '</div>';
+
+  // Default show A-class apology card and steps
+  out.innerHTML =
+    headerHTML +
+    '<div class="anfu-ab-picker" id="anfuAbPicker">' +
+      '<span class="anfu-ab-label">这次发火因为：</span>' +
+      '<div class="anfu-ab-chip" id="anfuAbA" onclick="selectAnfuAb(\''+sceneId+'\',\''+age+'\',\'A\')">🅰 场景触发（孩子确实做了这件事，我方式不当）</div>' +
+      '<div class="anfu-ab-chip" id="anfuAbB" onclick="selectAnfuAb(\''+sceneId+'\',\''+age+'\',\'B\')">🅱 情绪迁怒（平时能控制，今天我反应过头了）</div>' +
+    '</div>' +
+    apologyHTML +
+    '<div class="anfu-repair-flow-title">⏳ 分步修复流程（' + data.label + '）</div>' +
+    '<div id="anfuRepairSteps"></div>' +
+    '<button class="btn-train-primary done" id="anfuRepairSaveBtn" style="margin-top:8px;width:100%;opacity:0.5;cursor:not-allowed;" disabled>✅ 先选择 A 或 B 再记录</button>';
+
+  refreshRepairSteps('A');
 
   // Save auto repair session
   dbPut('repair_sessions', {
     ts: new Date().toISOString(),
     age_group: age, scene_key: sceneId,
     trigger_id: 0,
-    steps: data.steps.map((s,i) => ({ title:s.title, template:s.template }))
+    steps: data.steps.map((s,i) => ({ title:s.title, template: i===1 ? scene.repair : s.template }))
   }).catch(()=>{});
 }
 
-function saveRepairFromAnfu(sceneId, age) {
+function refreshRepairSteps(ab) {
+  const scene = window._anfuRepairScene;
+  const data = window._anfuRepairData;
+  if (!scene || !data) return;
+  const container = document.getElementById('anfuRepairSteps');
+  if (!container) return;
+
+  const isCustom = (window._anfuRepairSceneId === 'custom' && window._customSceneText);
+  // For custom scene, don't inject the full user text into template blanks — use generic filler
+  const filler = isCustom ? '这件事' : scene.name;
+
+  const stepsData = (ab === 'B' && data.stepsB) ? data.stepsB : data.steps;
+
+  // Build steps with scene name injection
+  const steps = stepsData.map((s, i) => {
+    let template = s.template;
+    // Inject scene name for placeholders in step 1 (承认) and step 4 (约定)
+    if (template.includes('_____')) {
+      template = template.replace('_____', filler);
+    }
+    if (template.includes('____')) {
+      template = template.replace('____', filler);
+    }
+    // Step 2: A类使用场景专属repair话术，B类保持模板（通用迁怒道歉）
+    if (i === 1 && ab === 'A') {
+      template = scene.repair;
+    }
+    return { title: s.title, template, tip: s.tip, isStep2: (i === 1), isStep4: (i === 3) };
+  });
+
+  container.innerHTML = steps.map((s, i) =>
+    '<div class="anfu-repair-step">'+
+      '<div class="anfu-repair-step-title">'+(i+1)+'. '+s.title+'</div>'+
+      '<div class="anfu-repair-step-body">'+esc(s.template)+'</div>'+
+      '<div class="anfu-repair-step-tip">💡 '+esc(s.tip)+'</div>'+
+      (s.isStep4 && scene.prevent && scene.prevent.length ?
+        '<div class="anfu-repair-prevent">' +
+          '<div class="anfu-repair-prevent-title">🛡️ 针对「'+esc(scene.name)+'」的预防建议</div>' +
+          scene.prevent.map(p => '<div class="anfu-repair-prevent-item">• '+esc(p)+'</div>').join('') +
+        '</div>' : '') +
+    '</div>'
+  ).join('');
+
+  // Also update apology card for B class
+  const card = document.getElementById('anfuRepairApologyCard');
+  const label = document.getElementById('anfuRepairApologyLabel');
+  const textEl = document.getElementById('anfuRepairApologyText');
+  const note = document.getElementById('anfuRepairApologyNote');
+  if (card && label && textEl && note) {
+    if (ab === 'B') {
+      label.innerHTML = '🅱 情绪迁怒专属回应';
+      // B-class step 2 is the apology — inject scene name
+      let bApology = (data.stepsB && data.stepsB[1] && data.stepsB[1].template) || '';
+      if (bApology.includes('_____')) bApology = bApology.replace('_____', filler);
+      textEl.textContent = bApology;
+      note.innerHTML = '👆 承认孩子确实有行为，但把"过度发火"的责任揽到自己身上';
+    } else {
+      if (isCustom) {
+        label.innerHTML = '💚 通用道歉（可自行调整）';
+        textEl.textContent = scene.repair;
+        note.innerHTML = '👆 根据你描述的情况，自行把"那件事"换成具体内容';
+      } else {
+        label.innerHTML = '💚 场景专属道歉（场景触发型）';
+        textEl.textContent = scene.repair;
+        note.innerHTML = '👆 这句话是专门为「' + esc(scene.name) + '」这个场景定制的，直接照着说就行';
+      }
+    }
+  }
+}
+}
+
+let _anfuRepairPending = null; // { sceneId, age, ab: null|'A'|'B' }
+
+function selectAnfuAb(sceneId, age, ab) {
+  _anfuRepairPending = { sceneId, age, ab };
+  const btn = document.getElementById('anfuRepairSaveBtn');
+  const chipA = document.getElementById('anfuAbA');
+  const chipB = document.getElementById('anfuAbB');
+  chipA.className = 'anfu-ab-chip' + (ab === 'A' ? ' selected-a' : '');
+  chipB.className = 'anfu-ab-chip' + (ab === 'B' ? ' selected-b' : '');
+  btn.disabled = false;
+  btn.style.opacity = '1';
+  btn.style.cursor = 'pointer';
+  btn.textContent = ab === 'A' ? '✅ 记录：场景触发（A类）' : '✅ 记录：情绪迁怒（B类）';
+  btn.onclick = () => saveRepairFromAnfu(sceneId, age, ab);
+  // Refresh steps and apology card to match selected AB
+  refreshRepairSteps(ab);
+}
+
+function saveRepairFromAnfu(sceneId, age, ab) {
   const scene = sceneLibrary.find(s => s.id === sceneId);
+  // Update repair_sessions with ab_class
+  dbGetAll('repair_sessions').then(rows => {
+    const sorted = rows.sort((a,b) => b.ts > a.ts ? 1 : -1);
+    const latest = sorted.find(r => r.scene_key === sceneId && r.age_group === age);
+    if (latest) {
+      latest.ab_class = ab;
+      dbPut('repair_sessions', latest).catch(()=>{});
+    }
+  }).catch(()=>{});
   addPoints('repair_used').catch(()=>{});
-  showToast('修复记录已保存 💚' + (scene ? ' — '+scene.name : ''));
+  showToast('修复记录已保存 💚' + (scene ? ' — '+scene.name : '') + ' [' + (ab==='A'?'场景触发':'情绪迁怒') + ']');
 }
 
 function renderAnfuSceneList() {
@@ -6750,19 +7296,23 @@ function renderAnfuSceneList() {
   detail.style.display = 'none';
   let scenes = sceneLibrary;
   if (anfuState.cat !== '全部') scenes = scenes.filter(s => s.cat === anfuState.cat);
-  document.getElementById('anfuSceneCount') && (document.getElementById('anfuSceneCount').remove());
-  const countEl = document.createElement('div');
-  countEl.className = 'anfu-scene-count'; countEl.id = 'anfuSceneCount';
-  countEl.textContent = '共 '+scenes.length+' 个场景   A=孩子行为 · B=家长迁怒';
+  if (anfuState.search) {
+    const q = anfuState.search.toLowerCase();
+    scenes = scenes.filter(s =>
+      s.name.toLowerCase().includes(q) || s.scene.toLowerCase().includes(q) ||
+      s.cat.toLowerCase().includes(q) || (s.tags || []).some(t => t.toLowerCase().includes(q))
+    );
+  }
   list.innerHTML = '';
+  const countEl = document.createElement('div');
+  countEl.className = 'anfu-scene-count';
+  countEl.textContent = scenes.length ? `共 ${scenes.length} 个场景` : (anfuState.search ? '未找到匹配场景' : '无场景');
   list.appendChild(countEl);
   scenes.forEach(s => {
     const card = document.createElement('div');
     card.className = 'anfu-scene-card';
     card.innerHTML = '<div class="anfu-scene-icon">'+s.icon+'</div>'+
-      '<div class="anfu-scene-info"><div class="anfu-scene-name">'+s.name+'</div>'+
-      '<div class="anfu-scene-desc">'+esc(s.scene.substring(0,30))+'...</div></div>'+
-      '<span class="anfu-scene-badge '+s.ab+'">'+s.ab+'类</span>';
+      '<div class="anfu-scene-name">'+s.name+'</div>';
     card.onclick = () => showSceneDetail(s.id);
     list.appendChild(card);
   });
@@ -6775,6 +7325,20 @@ function showSceneDetail(sceneId) {
   document.getElementById('anfuSceneList').style.display = 'none';
   const detail = document.getElementById('anfuSceneDetail');
   detail.style.display = 'block';
+
+  // Custom scene: show editable text input instead of fixed content
+  if (sceneId === 'custom') {
+    document.getElementById('anfuDetailContent').innerHTML =
+      '<div class="anfu-detail-card">'+
+        '<div class="anfu-detail-label">✏️ 描述一下刚才发生了什么</div>'+
+        '<textarea id="customSceneText" style="width:100%;min-height:80px;padding:10px;border-radius:10px;border:1.5px solid #E8E3DD;font-size:13px;resize:vertical;box-sizing:border-box;" placeholder="尽量具体地描述，比如：孩子把我刚整理好的书架全推倒了…&#10;或者：吃饭时孩子把碗摔了，我说了很重的话…"></textarea>'+
+      '</div>'+
+      '<div class="anfu-detail-card" style="color:var(--text-sub);font-size:12px;">💡 你写的描述会被用在修复步骤中，帮你说出更精准的道歉话术</div>'+
+      '<div style="display:flex;gap:8px;margin-top:8px;">'+
+        '<button class="btn-train-primary done" onclick="quickRepairCustom()">💚 获取分年龄段修复步骤</button></div>';
+    return;
+  }
+
   document.getElementById('anfuDetailContent').innerHTML =
     '<div class="anfu-detail-card"><div class="anfu-detail-label">📋 场景</div><div class="anfu-detail-scene">'+esc(s.scene)+'</div></div>'+
     '<div class="anfu-detail-card anfu-detail-bad"><div class="anfu-detail-label">❌ 忍住别说</div><div class="anfu-detail-text">"'+esc(s.bad)+'"</div></div>'+
@@ -6784,6 +7348,25 @@ function showSceneDetail(sceneId) {
     '<div class="anfu-detail-card"><div class="anfu-detail-label">💚 发火后修复话术</div><div class="anfu-detail-text">"'+esc(s.repair)+'"</div></div>'+
     '<div style="display:flex;gap:8px;margin-top:8px;">'+
       '<button class="btn-train-primary done" onclick="quickRepairFromDetail(\''+s.id+'\')">💚 获取分年龄段修复步骤</button></div>';
+}
+
+function quickRepairCustom() {
+  const text = (document.getElementById('customSceneText').value || '').trim();
+  if (!text) { showToast('请先描述发生了什么'); return; }
+  window._customSceneText = text;
+  const sel = document.getElementById('anfuRepairScene');
+  // Ensure 'custom' option exists in select
+  if (![...sel.options].some(o => o.value === 'custom')) {
+    const opt = document.createElement('option');
+    opt.value = 'custom';
+    opt.textContent = '✏️ 其他情况（已填写）';
+    sel.appendChild(opt);
+  }
+  sel.value = 'custom';
+  onRepairSceneChange();
+  document.getElementById('anfuSceneList').style.display = 'block';
+  document.getElementById('anfuSceneDetail').style.display = 'none';
+  document.getElementById('anfuRepairOutput').scrollIntoView({behavior:'smooth'});
 }
 
 function quickRepairFromDetail(sceneId) {
@@ -7067,6 +7650,7 @@ function renderJournalPage(entries, page) {
   if (s) s.style.display = entries.length > 0 ? 'block' : 'none';
 
   if (!entries.length) {
+    document.getElementById('journalLegend').classList.remove('visible');
     c.innerHTML = _journalSQLike
       ? '<div class="journal-empty">没有匹配「'+esc(_journalSQLike)+'」的记录</div>'
       : '<div class="journal-empty">还没有记录，在上方填写第一条心情复盘吧~</div>';
@@ -7074,16 +7658,19 @@ function renderJournalPage(entries, page) {
     return;
   }
 
+  // Show legend when entries exist
+  document.getElementById('journalLegend').classList.add('visible');
+
   // Render entries
   c.innerHTML = slice.map(e=>{
     const d = new Date(e.ts);
     const ts = `${d.getMonth()+1}月${d.getDate()}日 ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-    const abTag = e.ab_class === 'A' ? ' <span style="font-size:10px;background:#FFF0EC;color:#E8735A;padding:1px 6px;border-radius:8px;">A·孩子犯错</span>' :
-                  e.ab_class === 'B' ? ' <span style="font-size:10px;background:#FFF8E8;color:#E8A850;padding:1px 6px;border-radius:8px;">B·家长迁怒</span>' : '';
-    const intensityTag = e.intensity === '1' ? '🍃 有点烦躁' :
-                         e.intensity === '2' ? '🔥 明显生气' :
-                         e.intensity === '3' ? '💢 快要失控' :
-                         e.intensity === '4' ? '💥 已经爆发' : '';
+    const abTag = e.ab_class === 'A' ? ' <span style="font-size:10px;background:#FFF0EC;color:#E8735A;padding:1px 6px;border-radius:8px;" title="A·孩子犯错：确实是孩子做错了事">A·孩子犯错</span>' :
+                  e.ab_class === 'B' ? ' <span style="font-size:10px;background:#FFF8E8;color:#E8A850;padding:1px 6px;border-radius:8px;" title="B·家长迁怒：不是孩子的错，是你自己的情绪迁移">B·家长迁怒</span>' : '';
+    const intensityTag = e.intensity === '1' ? '<span title="情绪强度 1/4：只是有点烦躁，还能控制">🍃 有点烦躁</span>' :
+                         e.intensity === '2' ? '<span title="情绪强度 2/4：明显生气了，胸口发紧">🔥 明显生气</span>' :
+                         e.intensity === '3' ? '<span title="情绪强度 3/4：快要失控，想大声吼">💢 快要失控</span>' :
+                         e.intensity === '4' ? '<span title="情绪强度 4/4：已经完全爆发，事后后悔">💥 已经爆发</span>' : '';
     const reflectHtml = e.reflect ? '<div class="journal-reflect">💡 ' + esc(e.reflect) + '</div>' : '';
     return `<div class="journal-entry" data-id="${e.id}" onclick="openJournalDetail(${e.id})"><div class="journal-emoji">${e.emoji}</div><div class="journal-detail"><div class="journal-time">${ts} · ${e.emotion}${intensityTag ? ' · ' + intensityTag : ''}${abTag}</div><div class="journal-note">${esc(e.note)}</div>${reflectHtml}</div></div>`;
   }).join('');
@@ -8043,7 +8630,7 @@ const trainingLevels = [
     ]
   },
   {
-    id: 4, name: '亲子挑战', icon: '🤝', desc: '和孩子一起成长，共同面对挫折',
+    id: 4, name: '亲子挑战', icon: '🤝', desc: '和孩子一起练习情绪管理，共建和谐亲子关系',
     color: 'level-4', unlockKey: 'reframe',
     exercises: [
       { key:'co-breathe', name:'共同呼吸', icon:'🫁', type:'challenge', desc:'和孩子一起做呼吸练习',
@@ -8123,21 +8710,32 @@ function renderLevelProgress(sessions) {
     const done = lv.exercises.filter(e => completedExercises.has(e.key)).length;
     const total = lv.exercises.length;
     const pct = total ? Math.round(done/total*100) : 0;
-    const locked = !prevLevelComplete;
+    const ahead = !prevLevelComplete; // not yet "earned", but still accessible
 
     let badge = '';
-    if (done === total) { badge = '<span class="level-progress-badge done">✅ 完成</span>'; prevLevelComplete = true; }
-    else if (!locked) { badge = '<span class="level-progress-badge active">'+(done>0?'🔥 ':'')+done+'/'+total+'</span>'; prevLevelComplete = false; }
-    else { badge = '<span class="level-progress-badge locked-badge">🔒 未解锁</span>'; prevLevelComplete = false; }
+    if (done === total) {
+      badge = '<span class="level-progress-badge done">✅ 完成</span>';
+      prevLevelComplete = true;
+    } else if (!ahead) {
+      badge = '<span class="level-progress-badge active">'+(done>0?'🔥 ':'')+done+'/'+total+'</span>';
+      prevLevelComplete = false;
+    } else {
+      badge = '<span class="level-progress-badge ahead">📋 '+done+'/'+total+'</span>';
+      prevLevelComplete = false;
+    }
 
-    const clickAttr = locked ? '' : ' onclick="selectLevel('+li+')"';
-    html += '<div class="level-progress-card '+lv.color+(locked?' locked':'')+'"'+clickAttr+'>'+
+    // Always clickable — user can explore all levels
+    html += '<div class="level-progress-card '+lv.color+(ahead?' ahead':'')+'" onclick="selectLevel('+li+')">'+
       '<div class="level-icon">'+lv.icon+'</div>'+
       '<div class="level-progress-info">'+
         '<div class="level-progress-name">第'+lv.id+'级 · '+lv.name+'</div>'+
         '<div class="level-progress-sub">'+lv.desc+'</div>'+
         '<div class="level-progress-bar"><div class="level-progress-fill" style="width:'+pct+'%"></div></div>'+
       '</div>'+badge+'</div>';
+    // Visual chain between levels
+    if (li < trainingLevels.length - 1) {
+      html += '<div class="level-progress-chain"><div class="level-progress-chain-line'+(ahead?' ahead':'')+'"></div></div>';
+    }
   });
   c.innerHTML = html;
 }
@@ -8156,8 +8754,20 @@ async function renderExerciseList(lv) {
   const completedExercises = new Set();
   sessions.forEach(s => { if (s.completed) completedExercises.add(s.exercise_key); });
 
+  // Check if this level is "ahead" of recommended path
+  let isAhead = false;
+  if (lv.id > 1) {
+    const prevLv = trainingLevels[lv.id - 2];
+    const prevDone = prevLv.exercises.filter(e => completedExercises.has(e.key)).length;
+    if (prevDone < prevLv.exercises.length) isAhead = true;
+  }
+
   const c = document.getElementById('exerciseList');
-  c.innerHTML = lv.exercises.map(e => {
+  c.innerHTML = (isAhead ?
+    '<div style="background:#EBF3FA;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#6B8CAE;line-height:1.6;">'+
+      '💡 <strong>推荐按顺序完成</strong> — 前面的级别还没完成，但你随时可以跳过，直接开始这里的练习。'+
+    '</div>' : '') +
+    lv.exercises.map(e => {
     const done = completedExercises.has(e.key);
     const typeLabel = e.type==='timer'?'⏱️ 定时练习':e.type==='reflect'?'📝 情景反思':'🤝 亲子挑战';
     const durStr = e.duration ? ' · ' + e.duration + '秒' : '';
