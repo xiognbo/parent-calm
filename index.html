@@ -1673,21 +1673,25 @@ body {
 .anfu-header p { font-size: 13px; color: var(--text-sub); }
 
 /* Entry buttons */
-.anfu-entry-btns { display: flex; flex-direction: column; gap: 12px; padding: 8px 0 16px; }
+.anfu-entry-btns {
+  display: flex; flex-direction: column; gap: 16px; padding: 16px 0 24px;
+  flex: 1; justify-content: center; min-height: 320px;
+}
 .anfu-entry-btn {
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  padding: 20px 16px; border: 2px solid transparent; border-radius: var(--radius);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 28px 20px; border: 2px solid transparent; border-radius: 14px;
   cursor: pointer; transition: all 0.2s; text-align: center; width: 100%;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 .anfu-entry-btn:active { transform: scale(0.97); }
-.anfu-entry-btn.learn-btn { background: linear-gradient(135deg, #F5F0E8, #FDF8F0); border-color: #E0D5C0; }
-.anfu-entry-btn.repair-btn { background: linear-gradient(135deg, #EAF4E8, #F0F8EE); border-color: #B8D4B0; }
-.anfu-entry-btn.learn-btn:hover { background: linear-gradient(135deg, #EDE6D8, #F8F0E0); box-shadow: 0 4px 16px rgba(180,150,100,0.15); }
-.anfu-entry-btn.repair-btn:hover { background: linear-gradient(135deg, #DCF0D8, #E8F8E4); box-shadow: 0 4px 16px rgba(100,160,90,0.15); }
-.anfu-entry-icon { font-size: 36px; }
-.anfu-entry-label { font-size: 17px; font-weight: 700; }
-.anfu-entry-desc { font-size: 12px; color: var(--text-sub); }
+.anfu-entry-btn.learn-btn { background: linear-gradient(135deg, #F8F3E8, #FDFAF2); border-color: #E0D5C0; }
+.anfu-entry-btn.repair-btn { background: linear-gradient(135deg, #EDF6E8, #F4FAF0); border-color: #B8D4B0; }
+.anfu-entry-btn.learn-btn:hover, .anfu-entry-btn.learn-btn:active { background: linear-gradient(135deg, #EDE0CC, #F8F0E0); box-shadow: 0 4px 16px rgba(180,150,100,0.15); }
+.anfu-entry-btn.repair-btn:hover, .anfu-entry-btn.repair-btn:active { background: linear-gradient(135deg, #DCF0D8, #E8F8E6); box-shadow: 0 4px 16px rgba(100,160,90,0.15); }
+.anfu-entry-icon { font-size: 40px; line-height: 1; }
+.anfu-entry-label { font-size: 18px; font-weight: 700; letter-spacing: 0.02em; }
+.anfu-entry-desc { font-size: 13px; color: var(--text-sub); line-height: 1.4; }
 
 /* Section containers */
 .anfu-section { margin-top: 4px; }
