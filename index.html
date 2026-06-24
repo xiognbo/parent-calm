@@ -1672,6 +1672,26 @@ body {
 .anfu-header h2 { font-size: 20px; font-weight: 700; }
 .anfu-header p { font-size: 13px; color: var(--text-sub); }
 
+/* Entry buttons */
+.anfu-entry-btns { display: flex; flex-direction: column; gap: 12px; padding: 8px 0 16px; }
+.anfu-entry-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 20px 16px; border: 2px solid transparent; border-radius: var(--radius);
+  cursor: pointer; transition: all 0.2s; text-align: center; width: 100%;
+  box-sizing: border-box;
+}
+.anfu-entry-btn:active { transform: scale(0.97); }
+.anfu-entry-btn.learn-btn { background: linear-gradient(135deg, #F5F0E8, #FDF8F0); border-color: #E0D5C0; }
+.anfu-entry-btn.repair-btn { background: linear-gradient(135deg, #EAF4E8, #F0F8EE); border-color: #B8D4B0; }
+.anfu-entry-btn.learn-btn:hover { background: linear-gradient(135deg, #EDE6D8, #F8F0E0); box-shadow: 0 4px 16px rgba(180,150,100,0.15); }
+.anfu-entry-btn.repair-btn:hover { background: linear-gradient(135deg, #DCF0D8, #E8F8E4); box-shadow: 0 4px 16px rgba(100,160,90,0.15); }
+.anfu-entry-icon { font-size: 36px; }
+.anfu-entry-label { font-size: 17px; font-weight: 700; }
+.anfu-entry-desc { font-size: 12px; color: var(--text-sub); }
+
+/* Section containers */
+.anfu-section { margin-top: 4px; }
+
 .anfu-cat-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 10px; }
 .anfu-cat-tab {
   padding: 7px 14px; border-radius: 16px; border: 1.5px solid #E8E3DD;
@@ -2166,28 +2186,40 @@ body {
   <div class="view" id="viewAnfu">
     <div class="anfu-header">
       <h2>📖 安抚与修复</h2>
-      <p>40个场景 · 冷静后使用</p>
+      <p>41个场景 · 提前了解 & 事后补救</p>
     </div>
 
-    <!-- Category tabs -->
-    <div class="anfu-cat-tabs" id="anfuCatTabs"></div>
-
-    <!-- Search bar -->
-    <div class="anfu-search-bar">
-      <input class="anfu-search-input" id="anfuSceneSearch" type="text" placeholder="🔍 搜索场景（如：写作业、磨蹭、顶嘴…）" oninput="filterAnfuScenes()">
+    <!-- Two entry buttons -->
+    <div class="anfu-entry-btns" id="anfuEntryBtns">
+      <button class="anfu-entry-btn learn-btn" onclick="openAnfuSection('learn')">
+        <span class="anfu-entry-icon">📚</span>
+        <span class="anfu-entry-label">提前了解</span>
+        <span class="anfu-entry-desc">浏览41个场景 · 学习怎么说 · 预防发火</span>
+      </button>
+      <button class="anfu-entry-btn repair-btn" onclick="openAnfuSection('repair')">
+        <span class="anfu-entry-icon">💚</span>
+        <span class="anfu-entry-label">事后补救</span>
+        <span class="anfu-entry-desc">发火后选场景 · 获取专属修复道歉话术</span>
+      </button>
     </div>
 
-    <!-- Scene list -->
-    <div class="anfu-scene-list" id="anfuSceneList"></div>
-
-    <!-- Scene detail (expanded) -->
-    <div id="anfuSceneDetail" style="display:none">
-      <button class="anfu-back-btn" onclick="closeSceneDetail()">← 返回场景列表</button>
-      <div id="anfuDetailContent"></div>
+    <!-- Scene browser section (hidden by default) -->
+    <div class="anfu-section" id="anfuSceneSection" style="display:none">
+      <button class="anfu-back-btn" onclick="closeAnfuSection()">← 返回</button>
+      <div class="anfu-cat-tabs" id="anfuCatTabs"></div>
+      <div class="anfu-search-bar">
+        <input class="anfu-search-input" id="anfuSceneSearch" type="text" placeholder="🔍 搜索场景（如：写作业、磨蹭、顶嘴…）" oninput="filterAnfuScenes()">
+      </div>
+      <div class="anfu-scene-list" id="anfuSceneList"></div>
+      <div id="anfuSceneDetail" style="display:none">
+        <button class="anfu-back-btn" onclick="closeSceneDetail()">← 返回场景列表</button>
+        <div id="anfuDetailContent"></div>
+      </div>
     </div>
 
-    <!-- Repair wizard (triggered from scene detail) -->
-    <div class="anfu-repair-section" id="anfuRepairSection">
+    <!-- Repair wizard section (hidden by default) -->
+    <div class="anfu-section" id="anfuRepairSection" style="display:none">
+      <button class="anfu-back-btn" onclick="closeAnfuSection()">← 返回</button>
       <div class="anfu-repair-title">💚 发火了？选场景 → 获取专属修复道歉话术</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <select id="anfuRepairScene" class="anfu-select" onchange="onRepairSceneChange()">
@@ -7080,17 +7112,36 @@ async function logAndResume() {
 let anfuState = { cat: '全部', selectedScene: null, search: '' };
 
 function renderAnfuView() {
-  const cats = ['全部', '学习相关', '习惯相关', '情绪相关', '生活相关', '其他'];
-  const tabs = document.getElementById('anfuCatTabs');
-  tabs.innerHTML = cats.map(c =>
-    `<button class="anfu-cat-tab${c===anfuState.cat?' active':''}" onclick="switchAnfuCat('${c}')">${c}</button>`
-  ).join('');
-
-  buildRepairSceneSelect();
-  renderAnfuSceneList();
+  // Reset to entry buttons
+  document.getElementById('anfuEntryBtns').style.display = 'flex';
+  document.getElementById('anfuSceneSection').style.display = 'none';
+  document.getElementById('anfuRepairSection').style.display = 'none';
+  anfuState.selectedScene = null;
 }
 
-function switchAnfuCat(cat) { anfuState.cat = cat; anfuState.selectedScene = null; anfuState.search = ''; const s = document.getElementById('anfuSceneSearch'); if (s) s.value = ''; renderAnfuView(); }
+function openAnfuSection(type) {
+  document.getElementById('anfuEntryBtns').style.display = 'none';
+  if (type === 'learn') {
+    document.getElementById('anfuSceneSection').style.display = 'block';
+    document.getElementById('anfuRepairSection').style.display = 'none';
+    const cats = ['全部', '学习相关', '习惯相关', '情绪相关', '生活相关', '其他'];
+    const tabs = document.getElementById('anfuCatTabs');
+    tabs.innerHTML = cats.map(c =>
+      `<button class="anfu-cat-tab${c===anfuState.cat?' active':''}" onclick="switchAnfuCat('${c}')">${c}</button>`
+    ).join('');
+    renderAnfuSceneList();
+  } else {
+    document.getElementById('anfuSceneSection').style.display = 'none';
+    document.getElementById('anfuRepairSection').style.display = 'block';
+    buildRepairSceneSelect();
+  }
+}
+
+function closeAnfuSection() {
+  renderAnfuView();
+}
+
+function switchAnfuCat(cat) { anfuState.cat = cat; anfuState.selectedScene = null; anfuState.search = ''; const s = document.getElementById('anfuSceneSearch'); if (s) s.value = ''; openAnfuSection('learn'); }
 function filterAnfuScenes() { anfuState.search = (document.getElementById('anfuSceneSearch').value || '').trim(); renderAnfuSceneList(); }
 
 function buildRepairSceneSelect() {
@@ -7353,8 +7404,8 @@ function quickRepairCustom() {
   const text = (document.getElementById('customSceneText').value || '').trim();
   if (!text) { showToast('请先描述发生了什么'); return; }
   window._customSceneText = text;
+  openAnfuSection('repair');
   const sel = document.getElementById('anfuRepairScene');
-  // Ensure 'custom' option exists in select
   if (![...sel.options].some(o => o.value === 'custom')) {
     const opt = document.createElement('option');
     opt.value = 'custom';
@@ -7363,17 +7414,13 @@ function quickRepairCustom() {
   }
   sel.value = 'custom';
   onRepairSceneChange();
-  document.getElementById('anfuSceneList').style.display = 'block';
-  document.getElementById('anfuSceneDetail').style.display = 'none';
-  document.getElementById('anfuRepairOutput').scrollIntoView({behavior:'smooth'});
 }
 
 function quickRepairFromDetail(sceneId) {
+  openAnfuSection('repair');
   const sel = document.getElementById('anfuRepairScene');
   sel.value = sceneId;
   onRepairSceneChange();
-  document.getElementById('anfuSceneList').style.display = 'block';
-  document.getElementById('anfuSceneDetail').style.display = 'none';
   document.getElementById('anfuRepairOutput').scrollIntoView({behavior:'smooth'});
 }
 
