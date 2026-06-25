@@ -1741,8 +1741,15 @@ body {
   background: var(--card); text-align: center; font-size: 12px; font-weight: 500;
   cursor: pointer; transition: all 0.15s; color: var(--text-sub);
 }
-.anfu-ab-chip.selected-a { background: #FFF0EC; color: #E8735A; border-color: #E8735A; font-weight: 700; }
-.anfu-ab-chip.selected-b { background: #FFF8E8; color: #E8A850; border-color: #E8A850; font-weight: 700; }
+.anfu-ab-chip.selected-a {
+  background: #FFF0EC; color: #E8735A; border-color: #E8735A; font-weight: 700;
+  box-shadow: 0 2px 10px rgba(232,115,90,0.2); transform: scale(1.02);
+}
+.anfu-ab-chip.selected-b {
+  background: #FFF8E8; color: #E8A850; border-color: #E8A850; font-weight: 700;
+  box-shadow: 0 2px 10px rgba(232,168,80,0.2); transform: scale(1.02);
+}
+.anfu-ab-chip.unselected { opacity: 0.45; filter: grayscale(0.3); font-weight: 400; }
 
 .anfu-back-btn {
   border: none; background: var(--card); padding: 6px 14px; border-radius: 16px;
@@ -7318,8 +7325,11 @@ function selectAnfuAb(sceneId, age, ab) {
   const btn = document.getElementById('anfuRepairSaveBtn');
   const chipA = document.getElementById('anfuAbA');
   const chipB = document.getElementById('anfuAbB');
-  chipA.className = 'anfu-ab-chip' + (ab === 'A' ? ' selected-a' : '');
-  chipB.className = 'anfu-ab-chip' + (ab === 'B' ? ' selected-b' : '');
+  chipA.className = 'anfu-ab-chip' + (ab === 'A' ? ' selected-a' : ' unselected');
+  chipB.className = 'anfu-ab-chip' + (ab === 'B' ? ' selected-b' : ' unselected');
+  // Add checkmark to selected, remove from unselected
+  chipA.innerHTML = (ab === 'A' ? '✅ ' : '') + '🅰 场景触发（孩子确实做了这件事，我方式不当）';
+  chipB.innerHTML = (ab === 'B' ? '✅ ' : '') + '🅱 情绪迁怒（平时能控制，今天我反应过头了）';
   btn.disabled = false;
   btn.style.opacity = '1';
   btn.style.cursor = 'pointer';
