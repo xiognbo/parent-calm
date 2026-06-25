@@ -7347,6 +7347,7 @@ function saveRepairFromAnfu(sceneId, age, ab) {
 function renderAnfuSceneList() {
   const list = document.getElementById('anfuSceneList');
   const detail = document.getElementById('anfuSceneDetail');
+  list.style.display = '';  // 清除可能残留的 display:none，恢复 CSS grid 布局
   detail.style.display = 'none';
   let scenes = sceneLibrary;
   if (anfuState.cat !== '全部') scenes = scenes.filter(s => s.cat === anfuState.cat);
