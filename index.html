@@ -2146,6 +2146,7 @@ body {
           <div class="ha-leave-dot"></div>
           <div class="ha-leave-dot"></div>
           <div class="ha-leave-dot"></div>
+          <div class="ha-leave-dot"></div>
         </div>
       </div>
       <!-- Step 2: 跟着呼吸 -->
@@ -6858,7 +6859,7 @@ function startHeavyBreathingGuide() {
   actions.style.display = 'none';
   scene.className = 'ha-breathe-scene';
 
-  // ── Step 1: 倒计时进度点 ──
+  // ── Step 1: 倒计时进度点（5个点，每个1秒 = 约5秒停留）──
   const dots = document.querySelectorAll('#haLeaveProgress .ha-leave-dot');
   dots.forEach(function(d) { d.classList.remove('active'); });
   let dotIdx = 0;
@@ -6867,13 +6868,13 @@ function startHeavyBreathingGuide() {
     if (dotIdx < dots.length) {
       dots[dotIdx].classList.add('active');
       dotIdx++;
-      _haBreatheTimer = setTimeout(tickDot, 600);
+      _haBreatheTimer = setTimeout(tickDot, 1000);
     } else {
       // All dots filled → transition to Step 2
       _transitionToStep2();
     }
   }
-  _haBreatheTimer = setTimeout(tickDot, 300);
+  _haBreatheTimer = setTimeout(tickDot, 500);
 }
 
 function _transitionToStep2() {
@@ -6963,8 +6964,13 @@ function _runBreathingCycles() {
     }, 4200);
   }
 
-  // Small delay to let the fade-in complete before starting
-  _haBreatheTimer = setTimeout(step, 500);
+  // ── 「准备好了吗」引导语，让用户了解接下来要跟着小人呼吸 ──
+  text.textContent = '准备好了吗？';
+  hint.textContent = '看着下面的人，跟着他一起深呼吸...';
+  _haBreatheTimer = setTimeout(function() {
+    if (!heavyAlertActive) return;
+    step();
+  }, 2500);
 }
 
 function playAlertChime() {
