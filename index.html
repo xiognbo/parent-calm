@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>冷静家长 — 被动守护，自动提醒</title>
+<title id="pageTitle">冷静家长 — 被动守护，自动提醒</title>
 <style>
 :root {
   --bg: #FFF8F3;
@@ -51,18 +51,154 @@ body {
   padding: 20px 20px 12px;
   display: flex; align-items: center; justify-content: space-between;
 }
-.header-brand { display: flex; align-items: center; gap: 8px; }
+.header-brand { display: flex; align-items: center; gap: 10px; }
 .header-logo {
-  width: 32px; height: 32px;
+  width: 46px; height: 46px;
   background: linear-gradient(135deg, var(--coral), var(--amber));
-  border-radius: 10px;
-  display: flex; align-items: center; justify-content: center; font-size: 18px;
+  border-radius: 13px;
+  display: flex; align-items: center; justify-content: center; font-size: 26px;
+  flex-shrink: 0;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
+.header-logo img { width: 100%; height: 100%; border-radius: 11px; object-fit: cover; }
 .header-title { font-size: 17px; font-weight: 600; }
 .header-badge {
   font-size: 12px; font-weight: 600; padding: 5px 12px;
   border-radius: 20px;
 }
+.header-right { display: flex; align-items: center; gap: 8px; }
+
+/* ========== 设置弹窗 ========== */
+.settings-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.45); backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.settings-overlay.active { display: flex; }
+.settings-sheet {
+  background: var(--card); border-radius: 20px; padding: 0;
+  max-width: 400px; width: 100%; box-shadow: 0 12px 48px rgba(0,0,0,0.2);
+  overflow: hidden;
+}
+.settings-sheet-header {
+  display: flex; flex-direction: column; align-items: flex-start;
+  padding: 22px 24px 16px; border-bottom: 1px solid #F0EBE5;
+  position: relative;
+  background: linear-gradient(135deg, #FFFBFA, #FFFFFF);
+}
+.settings-sheet-header h3 { font-size: 18px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.settings-sheet-header .subtitle { font-size: 13px; color: var(--text-light); margin-top: 4px; }
+.settings-sheet-header .close-btn {
+  position: absolute; right: 18px; top: 18px;
+  width: 32px; height: 32px; border-radius: 50%; border: 1px solid #EDE5DD;
+  background: white; color: var(--text-light); font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+}
+.settings-sheet-header .close-btn:hover { background: #FDEAEA; color: #E74C3C; border-color: #F5C6CB; }
+
+.settings-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 24px; cursor: pointer; transition: all 0.2s ease;
+  border: none; background: none; width: 100%; text-align: left; font-size: 15px;
+  color: var(--text); position: relative;
+  margin: 4px 16px; border-radius: 14px;
+}
+.settings-item:hover { background: linear-gradient(135deg, #FFF9F6, #FFF5F1); transform: translateX(2px); }
+.settings-item:active { background: #F5EDE8; transform: translateX(0); }
+.settings-item-icon {
+  width: 44px; height: 44px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.settings-item-icon.coral  { background: linear-gradient(135deg, #FFE4DC, #FFD4C4); }
+.settings-item-icon.blue   { background: linear-gradient(135deg, #D6EAFF, #C2DBFD); }
+.settings-item-icon.yellow { background: linear-gradient(135deg, #FFF0CC, #FFE8B3); }
+.settings-item-icon.green  { background: linear-gradient(135deg, #D4EDDA, #BFDDD4); }
+.settings-item-icon.red    { background: linear-gradient(135deg, #FFDAD9, #FFCACA); }
+.settings-item-text { flex: 1; min-width: 0; }
+.settings-item-text .label { font-weight: 600; color: var(--text); font-size: 15px; letter-spacing: 0.3px; }
+.settings-item-text .desc { font-size: 12px; color: #B0A8A0; margin-top: 3px; }
+.settings-item-arrow { color: #D0C8C0; font-size: 18px; font-weight: 300; transition: all 0.2s; }
+.settings-item:hover .settings-item-arrow { color: var(--coral); transform: translateX(2px); }
+.settings-danger { margin-top: 8px; }
+.settings-danger .settings-item-text .label { color: #E74C3C; }
+.settings-danger .settings-item-text .desc { color: #E8A5A0; }
+
+/* ===== 图标选择器 & 名称编辑器 弹窗 ===== */
+.custom-dialog-overlay {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,0.5); backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center; padding: 24px;
+}
+.custom-dialog-overlay.active { display: flex; }
+.custom-dialog {
+  background: white; border-radius: 20px; max-width: 360px; width: 100%;
+  box-shadow: 0 16px 56px rgba(0,0,0,0.22); overflow: hidden;
+  animation: dialogPop 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes dialogPop {
+  from { opacity:0; transform: scale(0.88); }
+  to   { opacity:1; transform: scale(1); }
+}
+.custom-dialog-header {
+  padding: 20px 20px 12px; border-bottom: 1px solid #F0EBE5;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.custom-dialog-header h4 { font-size: 16px; font-weight: 700; color: var(--text); margin: 0; }
+.custom-dialog-close {
+  width: 30px; height: 30px; border-radius: 50%; border: 1px solid #EDE5DD;
+  background: white; color: #999; font-size: 15px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.custom-dialog-close:hover { background: #FDEAEA; color: #E74C3C; border-color: #F5C6CB; }
+.custom-dialog-body { padding: 16px 20px 20px; }
+/* 图标选择器 */
+.icon-source-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.icon-tab-btn {
+  flex: 1; padding: 9px 0; border-radius: 10px; border: 1.5px solid #E8E0D8;
+  background: white; font-size: 13px; font-weight: 600; color: var(--text-light);
+  cursor: pointer; transition: all 0.2s;
+}
+.icon-tab-btn.active { background: var(--coral); color: white; border-color: var(--coral); }
+.emoji-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 4px;
+}
+.emoji-cell {
+  width: 100%; aspect-ratio: 1; border-radius: 12px; border: 2px solid transparent;
+  background: #F8F4F0; font-size: 26px; cursor: pointer; display: flex;
+  align-items: center; justify-content: center; transition: all 0.18s;
+}
+.emoji-cell:hover { background: #FFF0EC; border-color: var(--coral); transform: scale(1.1); }
+.emoji-cell.selected { background: #FFF0EC; border-color: var(--coral); transform: scale(1.08); }
+.photo-pick-btn {
+  width: 100%; padding: 14px; border-radius: 12px; border: 2px dashed #D4CAC0;
+  background: #FAFAF8; color: var(--text); font-size: 14px; font-weight: 600;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  gap: 8px; transition: all 0.2s; margin-top: 4px;
+}
+.photo-pick-btn:hover { border-color: var(--coral); background: #FFF5F2; color: var(--coral); }
+/* 名称编辑器 */
+.name-input-field {
+  width: 100%; padding: 12px 16px; border-radius: 12px;
+  border: 1.5px solid #E0D8D0; font-size: 16px; color: var(--text);
+  outline: none; transition: border-color 0.2s; box-sizing: border-box;
+  font-family: inherit;
+}
+.name-input-field:focus { border-color: var(--coral); box-shadow: 0 0 0 3px rgba(232,115,90,0.12); }
+.name-input-hint { font-size: 12px; color: var(--text-light); margin-top: 8px; }
+.dialog-confirm-btn {
+  width: 100%; margin-top: 16px; padding: 13px;
+  border-radius: 12px; border: none;
+  background: linear-gradient(135deg, var(--coral), var(--amber));
+  color: white; font-size: 15px; font-weight: 700; cursor: pointer;
+  transition: opacity 0.2s;
+}
+.dialog-confirm-btn:hover { opacity: 0.88; }
+.icon-tab-panel { display: none; }
+.icon-tab-panel.active { display: block; }
 
 /* ========== VIEWS ========== */
 .view { display: none; flex: 1; padding: 0 20px; animation: fadeIn 0.3s ease; }
@@ -74,12 +210,7 @@ body {
 .guard-idle-top { text-align: center; margin: 12px 0 4px; }
 .guard-idle-top h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
 .guard-idle-top p { font-size: 13px; color: var(--text-sub); }
-.guard-idle-top .streak-tag {
-  display: inline-block; margin-top: 6px;
-  background: #E6F4EA; color: var(--green);
-  padding: 4px 14px; border-radius: 20px;
-  font-size: 13px; font-weight: 600;
-}
+/* ========== 守护页：开始守护按钮区域 ========== */
 
 /* Start button */
 .guard-start-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -151,12 +282,20 @@ body {
 .quick-record-scene.selected { border-color: var(--blue); background: #EDF4FF; }
 .quick-record-ab { display: flex; gap: 10px; }
 .quick-record-ab-btn {
-  flex: 1; padding: 10px; border-radius: 12px; border: 2px solid #E8E3DD;
+  flex: 1; padding: 12px; border-radius: 14px; border: 2.5px solid #E8E3DD;
   background: var(--card); font-size: 14px; font-weight: 600; cursor: pointer;
-  text-align: center; transition: all 0.15s;
+  text-align: center; transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
 }
-.quick-record-ab-btn.selected.A { border-color: var(--coral); background: #FFF0EC; color: var(--coral); }
-.quick-record-ab-btn.selected.B { border-color: #8B6DD8; background: #F0E8FE; color: #8B6DD8; }
+.quick-record-ab-btn.selected.A {
+  border-color: var(--coral); background: linear-gradient(135deg, #FFF0EC, #FFE8E0);
+  color: var(--coral); box-shadow: 0 4px 16px rgba(232,115,90,0.25), inset 0 1px 0 rgba(255,255,255,0.6);
+  transform: scale(1.03); font-weight: 700;
+}
+.quick-record-ab-btn.selected.B {
+  border-color: #8B6DD8; background: linear-gradient(135deg, #F0E8FE, #E8E0FB);
+  color: #8B6DD8; box-shadow: 0 4px 16px rgba(139,109,216,0.25), inset 0 1px 0 rgba(255,255,255,0.6);
+  transform: scale(1.03); font-weight: 700;
+}
 .quick-record-note {
   width: 100%; padding: 10px 14px; border-radius: 12px; border: 1.5px solid #E8E3DD;
   font-size: 14px; resize: none; background: #FBF9F6; font-family: inherit;
@@ -189,12 +328,21 @@ body {
 .classify-label { font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; }
 .classify-ab { display: flex; gap: 10px; }
 .classify-ab-btn {
-  flex: 1; padding: 12px; border-radius: 12px; border: 2px solid #E8E3DD;
+  flex: 1; padding: 14px; border-radius: 14px; border: 2.5px solid #E8E3DD;
   background: var(--card); font-size: 15px; font-weight: 600; cursor: pointer;
-  text-align: center; transition: all 0.15s;
+  text-align: center; transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  position: relative;
 }
-.classify-ab-btn.selected.A { border-color: var(--coral); background: #FFF0EC; color: var(--coral); }
-.classify-ab-btn.selected.B { border-color: #8B6DD8; background: #F0E8FE; color: #8B6DD8; }
+.classify-ab-btn.selected.A {
+  border-color: var(--coral); background: linear-gradient(135deg, #FFF0EC, #FFE8E0);
+  color: var(--coral); box-shadow: 0 4px 16px rgba(232,115,90,0.25), inset 0 1px 0 rgba(255,255,255,0.6);
+  transform: scale(1.03); font-weight: 700;
+}
+.classify-ab-btn.selected.B {
+  border-color: #8B6DD8; background: linear-gradient(135deg, #F0E8FE, #E8E0FB);
+  color: #8B6DD8; box-shadow: 0 4px 16px rgba(139,109,216,0.25), inset 0 1px 0 rgba(255,255,255,0.6);
+  transform: scale(1.03); font-weight: 700;
+}
 .classify-scenes { display: flex; gap: 6px; flex-wrap: wrap; }
 .classify-scene {
   padding: 6px 12px; border-radius: 16px; border: 1.5px solid #E8E3DD;
@@ -1156,6 +1304,56 @@ body {
 }
 .repair-scene-chip.selected { border-color: var(--coral); background: #FFF0EC; color: var(--coral); font-weight: 600; }
 
+/* ========== 首次使用引导 ========== */
+.onboard-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.onboard-overlay.active { display: flex; }
+.onboard-card {
+  background: var(--card); border-radius: 20px; padding: 32px 24px;
+  max-width: 360px; width: 100%; text-align: center;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+}
+.onboard-emoji { font-size: 48px; margin-bottom: 8px; }
+.onboard-card h2 { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.onboard-card > p { font-size: 13px; color: var(--text-sub); margin-bottom: 20px; }
+.onboard-card input {
+  width: 100%; padding: 12px 16px; border: 2px solid #E8E0D8; border-radius: 12px;
+  font-size: 16px; background: var(--bg); color: var(--text);
+  text-align: center; outline: none; box-sizing: border-box;
+}
+.onboard-card input:focus { border-color: var(--coral); }
+.onboard-label { font-size: 13px; color: var(--text-sub); margin: 16px 0 10px; }
+.onboard-icons {
+  display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+  margin-bottom: 20px;
+}
+.onboard-icon-chip {
+  width: 44px; height: 44px; border-radius: 12px; border: 2px solid #E8E0D8;
+  background: var(--bg); font-size: 22px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.onboard-icon-chip:hover { border-color: var(--amber); background: #FFF0E8; }
+.onboard-icon-chip.selected { border-color: var(--coral); background: #FFF0EC; transform: scale(1.1); }
+.onboard-photo-chip { background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; font-size: 18px; }
+.onboard-photo-chip:hover { border-color: var(--coral); background: var(--coral); }
+.onboard-photo-chip img { width: 100%; height: 100%; border-radius: 10px; object-fit: cover; }
+.onboard-photo-chip.selected { border-color: var(--coral); background: var(--coral); color: white; transform: scale(1.1); }
+.onboard-btn {
+  width: 100%; padding: 14px; border: none; border-radius: 14px;
+  background: linear-gradient(135deg, var(--coral), var(--amber));
+  color: white; font-size: 16px; font-weight: 700; cursor: pointer;
+}
+.onboard-btn:hover { opacity: 0.9; }
+.onboard-skip {
+  background: none; border: none; color: var(--text-light); font-size: 13px;
+  cursor: pointer; margin-top: 12px; padding: 4px;
+}
+
 /* Wizard overlay */
 .repair-wizard-overlay {
   position: fixed; inset: 0; z-index: 100; background: rgba(26,21,18,0.6);
@@ -1239,27 +1437,91 @@ body {
 }
 .dash-subnav button.active { background: linear-gradient(135deg, var(--coral), var(--amber)); color: white; }
 
-/* Summary cards row */
-.dash-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-.dash-card {
-  background: var(--card); border-radius: var(--radius-sm); padding: 14px 12px;
-  box-shadow: 0 1px 6px rgba(61,50,38,0.06);
+/* ===== Summary cards ===== */
+.dash-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
 }
-.dash-card .card-value { font-size: 28px; font-weight: 800; line-height: 1.1; }
+.dash-card {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 16px 14px 14px;
+  box-shadow: 0 2px 10px rgba(61,50,38,0.07);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.9);
+}
+.dash-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--coral), var(--amber));
+  border-radius: 14px 14px 0 0;
+  opacity: 0.6;
+}
+.dash-card .card-icon {
+  font-size: 18px;
+  margin-bottom: 6px;
+  display: block;
+  opacity: 0.85;
+}
+.dash-card .card-value {
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--text);
+  letter-spacing: -1px;
+}
 .dash-card .card-value.down { color: var(--green); }
 .dash-card .card-value.up { color: var(--coral); }
-.dash-card .card-label { font-size: 11px; color: var(--text-sub); margin-top: 4px; }
-.dash-card .card-change { font-size: 11px; margin-top: 2px; }
+.dash-card .card-label {
+  font-size: 11px;
+  color: var(--text-sub);
+  margin-top: 5px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+.dash-card .card-change { font-size: 10px; margin-top: 3px; font-weight: 500; }
 .dash-card .card-change.good { color: var(--green); }
 .dash-card .card-change.bad { color: var(--coral); }
 
-/* Chart container */
+/* ===== Chart container ===== */
 .dash-chart {
-  background: var(--card); border-radius: var(--radius); padding: 14px 12px;
-  margin-bottom: 10px; box-shadow: 0 1px 6px rgba(61,50,38,0.06);
+  background: var(--card);
+  border-radius: 14px;
+  padding: 16px 14px 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 10px rgba(61,50,38,0.07);
+  border: 1px solid rgba(255,255,255,0.9);
 }
-.dash-chart-title { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
-.dash-chart-subtitle { font-size: 11px; color: var(--text-light); font-weight: 400; margin-left: 4px; }
+.dash-chart-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dash-chart-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, #EDE8E3, transparent);
+  margin-left: 4px;
+}
+.dash-chart-subtitle {
+  font-size: 11px;
+  color: var(--text-light);
+  font-weight: 400;
+  margin-left: 2px;
+  background: #F5F0EB;
+  border-radius: 8px;
+  padding: 1px 6px;
+}
 .dash-chart svg { display: block; width: 100%; height: auto; }
 
 /* AB classification inline editor */
@@ -1267,11 +1529,19 @@ body {
   display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap;
 }
 .ab-classify-chip {
-  padding: 6px 14px; border-radius: 16px; border: 1.5px solid #EDE8E3;
-  font-size: 12px; cursor: pointer; background: var(--card); transition: all 0.2s;
+  padding: 8px 18px; border-radius: 18px; border: 2px solid #EDE8E3;
+  font-size: 13px; cursor: pointer; background: var(--card); transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1); font-weight: 600;
 }
-.ab-classify-chip.selected-a { border-color: var(--coral); background: #FFF0EC; color: var(--coral); font-weight: 600; }
-.ab-classify-chip.selected-b { border-color: var(--amber); background: #FFF8E8; color: var(--amber); font-weight: 600; }
+.ab-classify-chip.selected-a {
+  border-color: var(--coral); background: linear-gradient(135deg, #FFF0EC, #FFE8E0);
+  color: var(--coral); font-weight: 700; box-shadow: 0 3px 12px rgba(232,115,90,0.25), inset 0 1px 0 rgba(255,255,255,0.6);
+  transform: scale(1.04);
+}
+.ab-classify-chip.selected-b {
+  border-color: var(--amber); background: linear-gradient(135deg, #FFF8E8, #FFF0D6);
+  color: #C48A1A; font-weight: 700; box-shadow: 0 3px 12px rgba(232,168,80,0.25), inset 0 1px 0 rgba(255,255,255,0.6);
+  transform: scale(1.04);
+}
 
 /* AB donut legend */
 .ab-legend { display: flex; gap: 12px; justify-content: center; margin-top: 8px; font-size: 11px; }
@@ -1279,16 +1549,16 @@ body {
 .ab-legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 
 /* Hourly heat bar */
-.hour-bar-row { display: flex; align-items: flex-end; gap: 2px; height: 90px; margin-top: 6px; }
+.hour-bar-row { display: flex; align-items: flex-end; gap: 2px; height: 100px; margin-top: 8px; padding: 0 2px; }
 .hour-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; }
 .hour-bar-fill {
   width: 100%; max-width: 24px; border-radius: 4px 4px 2px 2px; transition: height 0.5s ease;
   background: linear-gradient(180deg, var(--coral), var(--coral-glow));
 }
-.hour-bar-fill.low { background: linear-gradient(180deg, #D0C8C0, #E8E4DE); }
-.hour-bar-fill.mid { background: linear-gradient(180deg, var(--amber), #F0C878); }
-.hour-bar-fill.high { background: linear-gradient(180deg, var(--coral), var(--red)); }
-.hour-bar-label { font-size: 9px; color: var(--text-light); margin-top: 3px; }
+.hour-bar-fill.low { background: linear-gradient(180deg, #C8C0B8, #E0DBD5); border-radius: 3px 3px 2px 2px; }
+.hour-bar-fill.mid { background: linear-gradient(180deg, var(--amber), #F0C878); border-radius: 3px 3px 2px 2px; }
+.hour-bar-fill.high { background: linear-gradient(180deg, var(--coral), #F5A090); border-radius: 3px 3px 2px 2px; }
+.hour-bar-label { font-size: 8px; color: var(--text-light); margin-top: 3px; white-space: nowrap; }
 
 /* Monthly report */
 .monthly-report {
@@ -1407,10 +1677,10 @@ body {
 .monthly-report .mr-section-title { font-size: 13px; font-weight: 600; color: var(--blue); margin-bottom: 4px; }
 
 /* Data export row */
-.dash-export-row { text-align: center; padding: 10px 0 20px; }
+.dash-export-row { text-align: center; padding: 10px 0 24px; }
 .dash-export-row .btn-export {
-  background: var(--card); border: 1.5px solid #EDE8E3; border-radius: var(--radius-sm);
-  padding: 10px 24px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text-sub);
+  background: var(--card); border: 1.5px solid #EDE8E3; border-radius: 20px;
+  padding: 11px 28px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text-sub);
   transition: all 0.2s;
 }
 .dash-export-row .btn-export:active { background: #F5F0EB; }
@@ -1423,25 +1693,41 @@ body {
 .dash-empty .empty-icon { font-size: 40px; margin-bottom: 8px; }
 
 /* Scene horizontal bar */
-.scene-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.scene-bar-label { width: 56px; font-size: 12px; text-align: right; color: var(--text-sub); flex-shrink: 0; }
-.scene-bar-track { flex: 1; height: 20px; border-radius: 10px; background: #F0EDEA; overflow: hidden; position: relative; }
-.scene-bar-fill { height: 100%; border-radius: 10px; transition: width 0.6s ease; }
-.scene-bar-fill.learning { background: linear-gradient(90deg, #5B9BD5, #7DB9E8); }
-.scene-bar-fill.habit { background: linear-gradient(90deg, #6BAA7D, #8CC99E); }
-.scene-bar-fill.emotion { background: linear-gradient(90deg, #E8735A, #F0907A); }
-.scene-bar-fill.daily { background: linear-gradient(90deg, #E8A850, #F0C878); }
-.scene-bar-fill.other { background: linear-gradient(90deg, #B0A49A, #D0C8C0); }
-.scene-bar-count { width: 28px; font-size: 11px; font-weight: 600; color: var(--text); text-align: right; flex-shrink: 0; }
+.scene-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.scene-bar-label { width: 62px; font-size: 12px; text-align: right; color: var(--text-sub); flex-shrink: 0; font-weight: 500; }
+.scene-bar-track { flex: 1; height: 22px; border-radius: 11px; background: #F0EDEA; overflow: hidden; position: relative; }
+.scene-bar-fill { height: 100%; border-radius: 11px; transition: width 0.7s cubic-bezier(0.4,0,0.2,1); }
+.scene-bar-fill.learning { background: linear-gradient(90deg, #5B9BD5, #7EC8F5); }
+.scene-bar-fill.habit { background: linear-gradient(90deg, #6BAA7D, #8DD9A5); }
+.scene-bar-fill.emotion { background: linear-gradient(90deg, #E8735A, #FF9B87); }
+.scene-bar-fill.daily { background: linear-gradient(90deg, #E8A850, #F5CC7A); }
+.scene-bar-fill.other { background: linear-gradient(90deg, #B0A49A, #D5CECA); }
+.scene-bar-count { width: 30px; font-size: 12px; font-weight: 700; color: var(--text); text-align: right; flex-shrink: 0; }
 
 /* Streak highlight */
 .streak-highlight {
-  text-align: center; padding: 12px; margin-bottom: 12px;
-  background: linear-gradient(135deg, #F0FEF0, #F0F8F0);
-  border-radius: var(--radius); border: 1px solid rgba(107,170,125,0.2);
+  text-align: center;
+  padding: 18px 12px;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #E8F8ED, #F0FAF3);
+  border-radius: 14px;
+  border: 1px solid rgba(107,170,125,0.25);
+  box-shadow: 0 2px 10px rgba(107,170,125,0.1);
 }
-.streak-highlight .streak-big { font-size: 36px; font-weight: 900; color: var(--green); }
-.streak-highlight .streak-label { font-size: 13px; color: var(--green); }
+.streak-highlight .streak-big {
+  font-size: 52px;
+  font-weight: 900;
+  color: var(--green);
+  line-height: 1;
+  letter-spacing: -2px;
+}
+.streak-highlight .streak-label {
+  font-size: 13px;
+  color: var(--green);
+  margin-top: 4px;
+  font-weight: 500;
+  opacity: 0.8;
+}
 
 /* ========== TRAINING VIEW ========== */
 .train-header { text-align: center; padding: 12px 0 6px; }
@@ -1651,6 +1937,55 @@ body {
 .level-4 .level-icon { background: #FFF8E8; }
 .level-4 .level-progress-fill { background: linear-gradient(90deg, #E8A850, #F0C878); }
 
+/* Training scene selector */
+.train-scene-selector { margin: 12px 0 4px; }
+.train-scene-selector-label { font-size: 12px; color: var(--text-light); margin-bottom: 8px; display:flex; align-items:center; gap:4px; }
+.train-cat-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.train-cat-chip {
+  padding: 7px 14px; border-radius: 18px; border: 1.5px solid #E8E3DD;
+  background: var(--card); font-size: 13px; font-weight: 500; cursor: pointer;
+  color: var(--text-sub); transition: all 0.15s; white-space: nowrap;
+}
+.train-cat-chip:active { transform: scale(0.95); }
+.train-cat-chip.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+.train-cat-chip.selected-scene { background: linear-gradient(135deg,#FFE4DC,#FFD4C4); border-color: var(--coral); color: var(--coral); font-weight: 600; }
+.train-scene-picker {
+  background: #F9F7F4; border-radius: 12px; padding: 10px 12px;
+  margin-bottom: 10px; display: none;
+}
+.train-scene-picker.open { display: block; }
+.train-scene-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+.train-scene-chip {
+  padding: 5px 12px; border-radius: 14px; border: 1.5px solid #E8E3DD;
+  background: var(--card); font-size: 12px; cursor: pointer; transition: all 0.15s;
+  color: var(--text-main);
+}
+.train-scene-chip:active { transform: scale(0.94); }
+.train-scene-chip.picked { background: #FFF0EC; border-color: var(--coral); color: var(--coral); font-weight: 600; }
+.train-scene-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: linear-gradient(135deg,#FFE4DC,#FFD4C4); color: var(--coral);
+  padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;
+  margin-left: 6px;
+}
+.train-scene-clear { font-size: 10px; margin-left: 4px; cursor: pointer; opacity: 0.6; }
+
+/* Scene context banner in exercise overlay */
+.scene-context-banner {
+  display: flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, #FFF0EC, #FFE8E0);
+  border-radius: 12px; padding: 10px 14px; margin-bottom: 16px;
+  border: 1.5px solid rgba(232,115,90,0.25);
+}
+.scene-context-icon { font-size: 22px; flex-shrink: 0; }
+.scene-context-text { flex: 1; min-width: 0; }
+.scene-context-text strong { display: block; font-size: 13px; color: var(--coral); }
+.scene-context-desc { display: block; font-size: 11px; color: var(--text-sub); margin-top: 2px; line-height: 1.4; }
+.scene-context-change {
+  flex-shrink: 0; font-size: 11px; color: var(--coral); border: 1px solid rgba(232,115,90,0.3);
+  background: #fff; padding: 4px 10px; border-radius: 12px; cursor: pointer;
+}
+
 /* Training history */
 .train-history-section { margin-top: 20px; }
 .train-history-title { font-size: 14px; font-weight: 600; margin-bottom: 10px; color: var(--text-sub); }
@@ -1658,6 +1993,12 @@ body {
   background: var(--card); border-radius: var(--radius-sm); padding: 10px 12px;
   margin-bottom: 6px; box-shadow: 0 1px 6px rgba(61,50,38,0.06);
   display: flex; gap: 8px; align-items: center; font-size: 13px;
+  cursor: pointer; transition: all 0.15s; position: relative;
+}
+.train-history-card:hover { background: #FFF9F6; box-shadow: 0 2px 10px rgba(61,50,38,0.1); }
+.train-history-card::after {
+  content: '›'; font-size: 20px; color: var(--text-light); flex-shrink: 0;
+  margin-left: auto; opacity: 0.5;
 }
 .train-history-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .train-history-dot.timer { background: var(--blue); }
@@ -1666,6 +2007,28 @@ body {
 .train-history-time { font-size: 11px; color: var(--text-light); }
 .train-history-name { font-weight: 500; }
 .train-history-note { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+
+/* Pagination bar */
+.train-pagination {
+  display: flex; gap: 6px; justify-content: center; align-items: center;
+  padding: 14px 0 8px; flex-wrap: wrap;
+}
+.train-pagination-btn {
+  min-width: 34px; height: 34px; border-radius: 10px; border: 1.5px solid #E8E3DD;
+  background: var(--card); font-size: 13px; font-weight: 600; cursor: pointer;
+  color: var(--text-sub); transition: all 0.15s; padding: 0 8px;
+  display: flex; align-items: center; justify-content: center;
+}
+.train-pagination-btn:active { transform: scale(0.94); }
+.train-pagination-btn.active {
+  background: var(--blue); color: #fff; border-color: var(--blue);
+  box-shadow: 0 2px 8px rgba(107,153,212,0.25);
+}
+.train-pagination-btn.arrow { font-size: 16px; }
+.train-pagination-btn:disabled { opacity: 0.35; pointer-events: none; }
+.train-pagination-info {
+  font-size: 12px; color: var(--text-light); padding: 0 4px;
+}
 
 /* ========== ANFU VIEW (安抚 — Layer 2) ========== */
 .anfu-header { text-align: center; padding: 12px 0 8px; }
@@ -1741,15 +2104,8 @@ body {
   background: var(--card); text-align: center; font-size: 12px; font-weight: 500;
   cursor: pointer; transition: all 0.15s; color: var(--text-sub);
 }
-.anfu-ab-chip.selected-a {
-  background: #FFF0EC; color: #E8735A; border-color: #E8735A; font-weight: 700;
-  box-shadow: 0 2px 10px rgba(232,115,90,0.2); transform: scale(1.02);
-}
-.anfu-ab-chip.selected-b {
-  background: #FFF8E8; color: #E8A850; border-color: #E8A850; font-weight: 700;
-  box-shadow: 0 2px 10px rgba(232,168,80,0.2); transform: scale(1.02);
-}
-.anfu-ab-chip.unselected { opacity: 0.45; filter: grayscale(0.3); font-weight: 400; }
+.anfu-ab-chip.selected-a { background: #FFF0EC; color: #E8735A; border-color: #E8735A; font-weight: 700; }
+.anfu-ab-chip.selected-b { background: #FFF8E8; color: #E8A850; border-color: #E8A850; font-weight: 700; }
 
 .anfu-back-btn {
   border: none; background: var(--card); padding: 6px 14px; border-radius: 16px;
@@ -1836,25 +2192,67 @@ body {
 }
 .vip-upgrade-icon { font-size: 32px; }
 .vip-upgrade-text { font-size: 14px; line-height: 1.6; }
+/* 会员中心弹窗样式 */
+.membership-status-card {
+  border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 16px;
+}
+.membership-status-card.trial {
+  background: linear-gradient(135deg, #EBF3FE, #E0EDFC);
+  border: 1px solid #C2DBFD;
+}
+.membership-status-card.vip {
+  background: linear-gradient(135deg, #FFF8E8, #FFE8C4);
+  border: 1px solid #FFD08A;
+}
+.membership-status-card.expired {
+  background: linear-gradient(135deg, #F5F0EB, #EDE5DD);
+  border: 1px solid #D4CAC0;
+}
+.membership-status-icon { font-size: 40px; margin-bottom: 8px; }
+.membership-status-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.membership-status-desc { font-size: 13px; color: var(--text-light); }
+.membership-trial-bar {
+  height: 6px; background: #E0E0E0; border-radius: 3px; margin: 12px 0 4px; overflow: hidden;
+}
+.membership-trial-bar-fill {
+  height: 100%; background: linear-gradient(90deg, #4A90D9, #6BA5E0); border-radius: 3px;
+  transition: width 0.3s;
+}
+.membership-benefits { margin: 16px 0; }
+.membership-benefits h5 { font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--text); }
+.membership-benefit-item {
+  display: flex; align-items: center; gap: 10px; padding: 8px 0;
+  font-size: 14px; color: var(--text);
+}
+.membership-benefit-item .check { color: var(--green); font-size: 16px; flex-shrink: 0; }
+.membership-upgrade-btn {
+  width: 100%; padding: 14px; border-radius: 12px; border: none;
+  background: linear-gradient(135deg, #F5A623, #E89320);
+  color: white; font-size: 16px; font-weight: 700; cursor: pointer;
+  margin-top: 8px; transition: opacity 0.2s;
+}
+.membership-upgrade-btn:hover { opacity: 0.9; }
+.membership-price { font-size: 13px; color: var(--text-light); text-align: center; margin-top: 8px; }
 /* ========== 鼓励话语 ========== */
 .dash-encouragement {
-  margin: 12px 0;
+  margin: 14px 0;
   padding: 0;
 }
 .encouragement-card {
-  background: linear-gradient(135deg, #F0FFF4, #F0F8FF);
-  border-radius: var(--radius);
+  background: linear-gradient(135deg, #EDF9F1, #EFF6FF);
+  border-radius: 14px;
   padding: 16px;
   display: flex;
   gap: 14px;
   align-items: flex-start;
-  border: 1px solid rgba(76,175,80,0.12);
-  box-shadow: 0 2px 8px rgba(76,175,80,0.06);
+  border: 1px solid rgba(76,175,80,0.15);
+  box-shadow: 0 2px 12px rgba(76,175,80,0.08);
 }
 .encouragement-icon {
-  font-size: 36px;
+  font-size: 34px;
   line-height: 1;
   flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
 }
 .encouragement-content {
   flex: 1;
@@ -1918,10 +2316,159 @@ body {
 <div class="app" id="app">
   <div class="header">
     <div class="header-brand">
-      <div class="header-logo">🧘</div>
-      <span class="header-title">冷静家长</span>
+      <div class="header-logo" id="headerLogo">🧘</div>
+      <span class="header-title" id="headerTitle">冷静家长</span>
     </div>
-    <div class="header-badge" id="headerBadge" style="background:#E6F4EA;color:var(--green);">🔥 <span id="streakNum">0</span>天冷静</div>
+    <div class="header-right">
+      <div class="header-badge" id="headerBadge" style="background:#E6F4EA;color:var(--green);">🔥 <span id="streakNum">0</span>天冷静</div>
+    </div>
+  </div>
+
+  <!-- ============== 首次使用引导弹窗 ============== -->
+  <div class="onboard-overlay" id="onboardOverlay">
+    <div class="onboard-card">
+      <div class="onboard-emoji">👋</div>
+      <h2>欢迎使用</h2>
+      <p>设置你的专属家长助手</p>
+      <input id="onboardNameInput" type="text" placeholder="输入你的称呼（如：慧慧妈妈）" maxlength="12" autocomplete="off" />
+      <p class="onboard-label">选一个图标</p>
+      <div class="onboard-icons" id="onboardIcons"></div>
+      <button class="onboard-btn" onclick="saveOnboard()">开始使用 →</button>
+      <button class="onboard-skip" onclick="skipOnboard()">先跳过</button>
+    </div>
+  </div>
+  <input type="file" accept="image/*" id="photoPicker" style="display:none" onchange="handlePhotoPicked(this)" />
+
+  <!-- ============== 设置弹窗 ============== -->
+  <div class="settings-overlay" id="settingsOverlay" onclick="closeSettingsIfOverlay(event)">
+    <div class="settings-sheet">
+      <div class="settings-sheet-header">
+        <h3>⚙️ 设置</h3>
+        <span class="subtitle">个性化你的守护助手</span>
+        <button class="close-btn" onclick="closeSettings()">✕</button>
+      </div>
+      <button class="settings-item" onclick="settingsMembership()">
+        <span class="settings-item-icon coral">👑</span>
+        <span class="settings-item-text">
+          <span class="label">会员中心</span>
+          <span class="desc" id="settingsMemberDesc">查看会员权益和试用状态</span>
+        </span>
+        <span class="settings-item-arrow">›</span>
+      </button>
+      <div class="settings-divider"></div>
+      <button class="settings-item" onclick="settingsChangeIcon()">
+        <span class="settings-item-icon coral">📷</span>
+        <span class="settings-item-text">
+          <span class="label">更换图标</span>
+          <span class="desc">从相册选照片或使用 emoji</span>
+        </span>
+        <span class="settings-item-arrow">›</span>
+      </button>
+      <button class="settings-item" onclick="settingsChangeName()">
+        <span class="settings-item-icon blue">✏️</span>
+        <span class="settings-item-text">
+          <span class="label">修改名称</span>
+          <span class="desc">给你的助手起个名字</span>
+        </span>
+        <span class="settings-item-arrow">›</span>
+      </button>
+      <div class="settings-divider"></div>
+      <button class="settings-item" onclick="settingsNotifications()">
+        <span class="settings-item-icon yellow">🔔</span>
+        <span class="settings-item-text">
+          <span class="label">通知设置</span>
+          <span class="desc">管理提醒方式和时机</span>
+        </span>
+        <span class="settings-item-arrow">›</span>
+      </button>
+      <button class="settings-item" onclick="settingsAbout()">
+        <span class="settings-item-icon green">ℹ️</span>
+        <span class="settings-item-text">
+          <span class="label">关于</span>
+          <span class="desc">版本号和帮助信息</span>
+        </span>
+        <span class="settings-item-arrow">›</span>
+      </button>
+      <div class="settings-divider"></div>
+      <button class="settings-item settings-danger" onclick="settingsClearData()">
+        <span class="settings-item-icon red">🗑️</span>
+        <span class="settings-item-text">
+          <span class="label">清除所有数据</span>
+          <span class="desc">重置为首次使用状态</span>
+        </span>
+        <span class="settings-item-arrow">›</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ============== 图标选择器弹窗 ============== -->
+  <div class="custom-dialog-overlay" id="iconPickerOverlay" onclick="closeIconPickerIfOverlay(event)">
+    <div class="custom-dialog">
+      <div class="custom-dialog-header">
+        <h4>🎨 选择图标</h4>
+        <button class="custom-dialog-close" onclick="closeIconPicker()">✕</button>
+      </div>
+      <div class="custom-dialog-body">
+        <div class="icon-source-tabs">
+          <button class="icon-tab-btn active" id="emojiTabBtn" onclick="switchIconTab('emoji')">😊 表情符号</button>
+          <button class="icon-tab-btn" id="photoTabBtn" onclick="switchIconTab('photo')">📷 我的相册</button>
+        </div>
+        <div class="icon-tab-panel active" id="emojiTabPanel">
+          <div class="emoji-grid" id="emojiPickerGrid"></div>
+        </div>
+        <div class="icon-tab-panel" id="photoTabPanel">
+          <div style="text-align:center;padding:12px 0 4px;">
+            <div style="font-size:40px;margin-bottom:8px;">📸</div>
+            <div style="font-size:14px;color:var(--text-light);margin-bottom:16px;">从相册选一张你和孩子的照片</div>
+          </div>
+          <button class="photo-pick-btn" onclick="triggerPhotoPicker()">
+            <span>📷</span><span>打开相册选照片</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== 名称编辑器弹窗 ============== -->
+  <div class="custom-dialog-overlay" id="nameEditOverlay" onclick="closeNameEditIfOverlay(event)">
+    <div class="custom-dialog">
+      <div class="custom-dialog-header">
+        <h4>✏️ 修改名称</h4>
+        <button class="custom-dialog-close" onclick="closeNameEdit()">✕</button>
+      </div>
+      <div class="custom-dialog-body">
+        <input class="name-input-field" id="nameEditInput" type="text" maxlength="12"
+          placeholder="冷静家长" oninput="onNameInputChange()" />
+        <div class="name-input-hint" id="nameEditHint">最多12个字，留空恢复默认"冷静家长"</div>
+        <button class="dialog-confirm-btn" onclick="confirmNameEdit()">确认保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== 会员中心弹窗 ============== -->
+  <div class="custom-dialog-overlay" id="membershipOverlay" onclick="closeMembershipIfOverlay(event)">
+    <div class="custom-dialog" style="max-width:380px;">
+      <div class="custom-dialog-header">
+        <h4>👑 会员中心</h4>
+        <button class="custom-dialog-close" onclick="closeMembership()">✕</button>
+      </div>
+      <div class="custom-dialog-body" id="membershipBody">
+        <!-- 动态内容 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== 训练记录详情弹窗 ============== -->
+  <div class="custom-dialog-overlay" id="trainDetailOverlay" onclick="closeTrainDetailIfOverlay(event)">
+    <div class="custom-dialog" style="max-width:380px;">
+      <div class="custom-dialog-header">
+        <h4>📋 训练记录</h4>
+        <button class="custom-dialog-close" onclick="closeTrainDetail()">✕</button>
+      </div>
+      <div class="custom-dialog-body" id="trainDetailBody">
+        <!-- 动态内容 -->
+      </div>
+    </div>
   </div>
 
   <!-- ============== TAB: 守护 ============== -->
@@ -1930,8 +2477,7 @@ body {
     <div class="guard-idle" id="guardIdle">
       <div class="guard-idle-top">
         <h2 id="greetingText">下午好</h2>
-        <p>把手机放在身边，它会帮你觉察情绪</p>
-        <div class="streak-tag">🔥 已连续 <span id="idleStreak">0</span> 天</div>
+        <p>一键止怒，温柔育儿</p>
       </div>
       <div class="guard-start-wrap">
         <button class="btn-start-guard" id="btnStartGuard" onclick="startGuarding()">
@@ -1942,22 +2488,17 @@ body {
         <div class="guard-status-msg" id="guardStatusMsg" style="display:none"></div>
       </div>
 
-      <!-- 免费用户升级引导 -->
+      <!-- 会员状态提示（动态显示） -->
       <div class="vip-upgrade-banner" id="vipUpgradeBanner" style="display:none">
         <div class="vip-upgrade-icon">🔒</div>
         <div class="vip-upgrade-text">
-          <strong>实时监测预警为会员专属功能</strong><br>
-          <span style="font-size:12px;color:var(--text-sub);">免费用户可浏览安抚话术和手动记录数据</span>
+          <strong id="vipBannerTitle">实时监测预警为会员专属功能</strong><br>
+          <span style="font-size:12px;color:var(--text-sub);" id="vipBannerDesc">免费用户可浏览安抚话术和手动记录数据</span>
         </div>
       </div>
 
-      <!-- VIP 开关（演示用） -->
-      <div style="text-align:center;margin-top:10px;">
-        <button class="anfu-cat-tab" id="vipToggleBtn" onclick="toggleVip()">👑 会员模式</button>
-      </div>
-
       <!-- 🧪 测试按钮（不需要说话即可测试两层预警） -->
-      <div style="text-align:center;margin-top:16px;">
+      <div class="debug-only" style="text-align:center;margin-top:16px;display:none;">
         <div style="font-size:11px;color:var(--text-sub);margin-bottom:8px;">🧪 功能测试</div>
         <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
           <button onclick="testLayer1()"
@@ -1985,7 +2526,7 @@ body {
         </div>
         <div class="guard-stat s-blue">
           <div class="guard-stat-val" id="idleAlertCount">0</div>
-          <div class="guard-stat-lbl">成功拦截</div>
+          <div class="guard-stat-lbl">预警次数</div>
         </div>
         <div class="guard-stat s-amber">
           <div class="guard-stat-val" id="idleGuardMin">0</div>
@@ -2125,7 +2666,7 @@ body {
         <div class="monitor-elapsed" id="monitorElapsed">00:00</div>
         <div class="monitor-zone-text" id="monitorZoneText">平静守护中</div>
         <button class="btn-stop-guard" onclick="stopGuarding()">结束守护</button>
-        <div class="demo-buttons" id="demoButtons" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+        <div class="demo-buttons debug-only" id="demoButtons" style="margin-top:12px;display:none;gap:8px;flex-wrap:wrap;justify-content:center">
           <button class="demo-btn l1" onclick="simulateLayer1()">🧪 模拟第1层</button>
           <button class="demo-btn l2" onclick="simulateLayer2()">🧪 模拟ASR命中→第2层</button>
         </div>
@@ -2142,7 +2683,6 @@ body {
         <div class="ha-leave-title">先离开当前环境</div>
         <div class="ha-leave-sub">转身，走几步，给自己和孩子之间<br>留出几分钟缓冲空间</div>
         <div class="ha-leave-progress" id="haLeaveProgress">
-          <div class="ha-leave-dot"></div>
           <div class="ha-leave-dot"></div>
           <div class="ha-leave-dot"></div>
           <div class="ha-leave-dot"></div>
@@ -2278,24 +2818,24 @@ body {
       <!-- 7-day trend chart -->
       <div class="dash-chart" id="dashTrendChart">
         <div class="dash-chart-title">📈 情绪趋势 <span class="dash-chart-subtitle">近7天</span></div>
-        <div id="trendChartContainer" style="width:100%;overflow-x:auto"></div>
+        <div id="trendChartContainer" style="width:100%;overflow-x:hidden"></div>
       </div>
 
       <!-- AB分类 donut -->
       <div class="dash-chart" id="dashABChart">
-        <div class="dash-chart-title">🔍 A·B 发火分类</div>
+        <div class="dash-chart-title">🍩 发火原因分类 <span class="dash-chart-subtitle">A·B分析</span></div>
         <div id="abDonutContainer"></div>
       </div>
 
       <!-- Hourly distribution -->
       <div class="dash-chart" id="dashHourChart">
-        <div class="dash-chart-title">⏰ 发火时段分布</div>
+        <div class="dash-chart-title">⏰ 发火时段分布 <span class="dash-chart-subtitle">24小时</span></div>
         <div id="hourChartContainer"></div>
       </div>
 
       <!-- Scene distribution -->
       <div class="dash-chart" id="dashSceneChart">
-        <div class="dash-chart-title">🏷️ 发火场景分布</div>
+        <div class="dash-chart-title">🏷️ 发火场景分布 <span class="dash-chart-subtitle">四大类</span></div>
         <div id="sceneChartContainer"></div>
       </div>
 
@@ -2458,6 +2998,15 @@ body {
       </div>
     </div>
 
+    <!-- Scene selector for contextual training -->
+    <div class="train-scene-selector" id="trainSceneSelector">
+      <div class="train-scene-selector-label">🎯 选一个你想练习应对的情景，训练内容将围绕这个场景展开</div>
+      <div class="train-cat-chips" id="trainCatChips"></div>
+      <div class="train-scene-picker" id="trainScenePicker">
+        <div class="train-scene-grid" id="trainSceneGrid"></div>
+      </div>
+    </div>
+
     <!-- Level list -->
     <div class="level-progress-section" id="levelProgressSection"></div>
 
@@ -2474,6 +3023,7 @@ body {
     <div class="train-history-section" id="trainHistorySection">
       <div class="train-history-title">📋 训练记录</div>
       <div id="trainHistoryList"><div class="journal-empty">还没有训练记录</div></div>
+      <div class="train-pagination" id="trainPagination" style="display:none;"></div>
     </div>
   </div>
 
@@ -2502,6 +3052,9 @@ body {
     <button class="nav-item" data-view="train" onclick="switchView('train')">
       <span class="nav-icon">🎯</span>训练
     </button>
+    <button class="nav-item" onclick="openSettings()">
+      <span class="nav-icon">⚙️</span>设置
+    </button>
   </div>
 </div>
 
@@ -2523,20 +3076,20 @@ body {
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- DEBUG: Direct test button — always visible, bypasses guarding -->
-<div id="debugTestBtn" style="position:fixed;bottom:100px;right:16px;z-index:99999;
+<!-- DEBUG: Direct test buttons — only visible when ?debug=1 -->
+<div class="debug-only" id="debugTestBtn" style="position:fixed;bottom:100px;right:16px;z-index:99999;
   background:linear-gradient(135deg,#FFB432,#E8A020);color:#fff;
   padding:14px 20px;border-radius:24px;font-size:14px;font-weight:700;
   box-shadow:0 4px 20px rgba(255,180,50,0.5);cursor:pointer;
-  border:none;display:block;"
+  border:none;display:none;"
   onclick="debugShowOverlay('manual')">
   🧪 声学预警
 </div>
-<div id="debugSemanticBtn" style="position:fixed;bottom:170px;right:16px;z-index:99999;
+<div class="debug-only" id="debugSemanticBtn" style="position:fixed;bottom:170px;right:16px;z-index:99999;
   background:linear-gradient(135deg,#8B6914,#6B4C1E);color:#fff;
   padding:14px 20px;border-radius:24px;font-size:14px;font-weight:700;
   box-shadow:0 4px 20px rgba(107,76,30,0.5);cursor:pointer;
-  border:none;display:block;"
+  border:none;display:none;"
   onclick="showColdViolenceOverlay('test cold violence','我不要你了')">
   🗣️ 冷暴力预警
 </div>
@@ -3290,7 +3843,9 @@ const repairScripts = {
 /* ========== APP STATE ========== */
 let currentView = 'guard';
 let guarding = false;
-let isVip = true; // 会员状态（免费用户无监测预警）
+let isVip = false; // 会员状态，由 checkMembership() 初始化
+const TRIAL_DAYS = 3; // 免费试用天数
+const TRIAL_MS = TRIAL_DAYS * 24 * 60 * 60 * 1000;
 let audioCtx = null, analyser = null, micStream = null;
 let guardStartTime = 0, guardElapsedInterval = null;
 let monitorAnimId = null;
@@ -3338,7 +3893,8 @@ let _asrTencentFailed = false;      // auto-fallback flag: Tencent Cloud unreach
 let _semanticRestartTimer = null;   // timer handle for onend restart loop
 let _semanticRestartCount = 0;      // restart counter (safety cap, ~5min max)
 let _asrStartTimeout = null;        // safety timeout: detect when onstart never fires
-let _asrOnstartFired = false;       // flag: true after onstart fires at least once
+let _asrOnstartFired = false;       // flag: true after onstart fires for current cycle
+let _asrNoSpeechCount = 0;          // consecutive no-speech count (for back-off)
 const SEMANTIC_MAX_RESTARTS = 100;
 // ===== ASR Diagnostic Tracking =====
 let _asrResultCount = 0;            // total speech results received (any text)
@@ -3967,16 +4523,307 @@ const TENCENT_SECRET_KEY = 'BD6pOm061oW4uc8VuEPOEtOkxBUp01rU';
 // Default webspeech — most reliable on mobile (no auth, no WebSocket, built-in)
 const ASR_PROVIDER_TYPE = 'tencent';
 
+/* ========== 自定义应用名称与图标 ========== */
+const APP_ICONS = ['🧘', '🧠', '💆', '💪', '🫶', '🌸', '⭐', '🌈', '🏠', '👪', '🐻', '🦋', '❤️', '🌿', '☀️'];
+
+function getAppName() {
+  return localStorage.getItem('pc_app_name') || '冷静家长';
+}
+
+function getAppIcon() {
+  return localStorage.getItem('pc_app_icon') || '🧘';
+}
+
+function initAppName() {
+  const name = getAppName();
+  const icon = getAppIcon();
+  const titleEl = document.getElementById('pageTitle');
+  if (titleEl) titleEl.textContent = name + ' — 被动守护，自动提醒';
+  const headerEl = document.getElementById('headerTitle');
+  if (headerEl) headerEl.textContent = name;
+  const logoEl = document.getElementById('headerLogo');
+  if (logoEl) {
+    if (icon && icon.startsWith('data:image')) {
+      logoEl.innerHTML = '<img src="' + icon + '" style="width:100%;height:100%;border-radius:8px;object-fit:cover;" />';
+    } else {
+      logoEl.textContent = icon || '🧘';
+    }
+  }
+}
+
+function editAppName() {
+  const current = getAppName();
+  const newName = prompt('给你的助手起个名字吧（留空恢复默认"冷静家长"）：', current === '冷静家长' ? '' : current);
+  if (newName === null) return;
+  const finalName = newName.trim() || '冷静家长';
+  localStorage.setItem('pc_app_name', finalName);
+  initAppName();
+}
+
+function editAppIcon() {
+  if (confirm('要从手机相册选择照片作为图标吗？\n\n确定 = 从相册选照片\n取消 = 使用 emoji 图标')) {
+    document.getElementById('photoPicker').click();
+  } else {
+    const current = getAppIcon();
+    // If current is a photo, show empty prompt
+    const defaultVal = (current && current.startsWith('data:')) ? '' : (current === '🧘' ? '' : current);
+    const choice = prompt('输入一个 emoji 图标（如 🧘 🐻 🌸）：', defaultVal);
+    if (choice === null) return;
+    const finalIcon = choice.trim() || '🧘';
+    localStorage.setItem('pc_app_icon', finalIcon);
+    initAppName();
+  }
+}
+
+function showOnboard() {
+  // 已有自定义名称就不弹引导
+  if (localStorage.getItem('pc_app_name') && localStorage.getItem('pc_app_name') !== '冷静家长') return;
+  // 已跳过也不弹
+  if (localStorage.getItem('pc_onboard_skipped') === '1') return;
+
+  const overlay = document.getElementById('onboardOverlay');
+  if (!overlay) return;
+  overlay.classList.add('active');
+
+  // 渲染图标选择器（emoji + 照片选项）
+  const iconsContainer = document.getElementById('onboardIcons');
+  if (!iconsContainer) return;
+
+  iconsContainer.innerHTML = APP_ICONS.map((ico, idx) => {
+    return '<div class="onboard-icon-chip" data-icon="' + ico + '" onclick="selectOnboardIcon(this)">' + ico + '</div>';
+  }).join('') + '<div class="onboard-icon-chip onboard-photo-chip" data-icon="__PHOTO__" onclick="onboardPickPhoto()">📷</div>';
+
+  // 检查已保存的图标
+  const savedIcon = getAppIcon();
+  if (savedIcon && savedIcon.startsWith('data:image')) {
+    // 之前选了照片 → 选中照片按钮并显示预览
+    const photoChip = iconsContainer.querySelector('.onboard-photo-chip');
+    if (photoChip) {
+      photoChip.classList.add('selected');
+      photoChip.innerHTML = '<img src="' + savedIcon + '" style="width:100%;height:100%;border-radius:10px;object-fit:cover;">';
+      photoChip.setAttribute('data-icon', savedIcon);
+    }
+  } else if (savedIcon && savedIcon !== '🧘') {
+    // 之前选了 emoji
+    const match = iconsContainer.querySelector('[data-icon="' + savedIcon + '"]');
+    if (match) match.classList.add('selected');
+    else {
+      const firstChip = iconsContainer.querySelector('.onboard-icon-chip:not(.onboard-photo-chip)');
+      if (firstChip) firstChip.classList.add('selected');
+    }
+  } else {
+    // 默认选中第一个 emoji
+    const firstChip = iconsContainer.querySelector('.onboard-icon-chip:not(.onboard-photo-chip)');
+    if (firstChip) firstChip.classList.add('selected');
+  }
+}
+
+function selectOnboardIcon(el) {
+  const container = document.getElementById('onboardIcons');
+  if (!container) return;
+  container.querySelectorAll('.onboard-icon-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function onboardPickPhoto() {
+  // 先高亮照片按钮
+  const photoChip = document.querySelector('#onboardIcons .onboard-photo-chip');
+  if (photoChip) selectOnboardIcon(photoChip);
+  // 打开手机相册
+  document.getElementById('photoPicker').click();
+}
+
+function handlePhotoPicked(input) {
+  if (!input.files || !input.files[0]) return;
+  compressPhoto(input.files[0], function(dataUrl) {
+    // 保存照片
+    localStorage.setItem('pc_app_icon', dataUrl);
+
+    // 检查是否在引导弹窗中
+    const overlay = document.getElementById('onboardOverlay');
+    if (overlay && overlay.classList.contains('active')) {
+      const photoChip = document.querySelector('#onboardIcons .onboard-photo-chip');
+      if (photoChip) {
+        selectOnboardIcon(photoChip);
+        // 在按钮上显示预览
+        photoChip.innerHTML = '<img src="' + dataUrl + '" style="width:100%;height:100%;border-radius:10px;object-fit:cover;">';
+        photoChip.setAttribute('data-icon', dataUrl);
+      }
+    } else {
+      // 直接从顶栏点击触发 → 立即刷新
+      initAppName();
+    }
+  });
+}
+
+function compressPhoto(file, callback) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var canvas = document.createElement('canvas');
+      var maxSize = 128;
+      var w = img.width, h = img.height;
+      if (w > h) { if (w > maxSize) { h *= maxSize / w; w = maxSize; } }
+      else { if (h > maxSize) { w *= maxSize / h; h = maxSize; } }
+      canvas.width = w; canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      callback(canvas.toDataURL('image/jpeg', 0.7));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveOnboard() {
+  const nameInput = document.getElementById('onboardNameInput');
+  const name = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : '冷静家长';
+
+  const selected = document.querySelector('#onboardIcons .onboard-icon-chip.selected');
+  const icon = selected ? selected.getAttribute('data-icon') : '🧘';
+
+  localStorage.setItem('pc_app_name', name);
+  localStorage.setItem('pc_app_icon', icon);
+
+  const overlay = document.getElementById('onboardOverlay');
+  if (overlay) overlay.classList.remove('active');
+
+  initAppName();
+}
+
+function skipOnboard() {
+  localStorage.setItem('pc_onboard_skipped', '1');
+  const overlay = document.getElementById('onboardOverlay');
+  if (overlay) overlay.classList.remove('active');
+}
+
+/* ========== 设置菜单 ========== */
+function openSettings() {
+  var overlay = document.getElementById('settingsOverlay');
+  if (overlay) overlay.classList.add('active');
+}
+
+function closeSettings() {
+  var overlay = document.getElementById('settingsOverlay');
+  if (overlay) overlay.classList.remove('active');
+}
+
+function closeSettingsIfOverlay(e) {
+  // Only close if clicking the overlay background, not the sheet
+  if (e.target === e.currentTarget) closeSettings();
+}
+
+// ===== 图标选择器 =====
+function settingsChangeIcon() {
+  openIconPicker();
+}
+function openIconPicker() {
+  // 初始化 emoji 网格
+  var grid = document.getElementById('emojiPickerGrid');
+  var currentIcon = getAppIcon();
+  grid.innerHTML = APP_ICONS.map(function(ico) {
+    var sel = (ico === currentIcon) ? ' selected' : '';
+    return '<button class="emoji-cell' + sel + '" onclick="selectEmojiIcon(\'' + ico + '\')">' + ico + '</button>';
+  }).join('');
+  // 默认显示 emoji tab
+  switchIconTab('emoji');
+  document.getElementById('iconPickerOverlay').classList.add('active');
+}
+function closeIconPicker() {
+  document.getElementById('iconPickerOverlay').classList.remove('active');
+}
+function closeIconPickerIfOverlay(e) {
+  if (e.target === e.currentTarget) closeIconPicker();
+}
+function switchIconTab(tab) {
+  document.getElementById('emojiTabBtn').classList.toggle('active', tab === 'emoji');
+  document.getElementById('photoTabBtn').classList.toggle('active', tab === 'photo');
+  document.getElementById('emojiTabPanel').classList.toggle('active', tab === 'emoji');
+  document.getElementById('photoTabPanel').classList.toggle('active', tab === 'photo');
+}
+function selectEmojiIcon(ico) {
+  localStorage.setItem('pc_app_icon', ico);
+  initAppName();
+  closeIconPicker();
+}
+function triggerPhotoPicker() {
+  closeIconPicker();
+  setTimeout(function() { document.getElementById('photoPicker').click(); }, 100);
+}
+
+// ===== 名称编辑器 =====
+function settingsChangeName() {
+  openNameEdit();
+}
+function openNameEdit() {
+  var current = getAppName();
+  var input = document.getElementById('nameEditInput');
+  input.value = current === '冷静家长' ? '' : current;
+  onNameInputChange();
+  document.getElementById('nameEditOverlay').classList.add('active');
+  setTimeout(function() { input.focus(); input.select(); }, 200);
+}
+function closeNameEdit() {
+  document.getElementById('nameEditOverlay').classList.remove('active');
+}
+function closeNameEditIfOverlay(e) {
+  if (e.target === e.currentTarget) closeNameEdit();
+}
+function onNameInputChange() {
+  var val = document.getElementById('nameEditInput').value;
+  var hint = document.getElementById('nameEditHint');
+  var remain = 12 - val.length;
+  hint.textContent = remain > 0 ? ('还可输入 ' + remain + ' 个字，留空恢复默认"冷静家长"') : '已达到最大长度';
+  hint.style.color = remain <= 2 ? 'var(--coral)' : 'var(--text-light)';
+}
+function confirmNameEdit() {
+  var val = document.getElementById('nameEditInput').value.trim();
+  var finalName = val || '冷静家长';
+  localStorage.setItem('pc_app_name', finalName);
+  initAppName();
+  closeNameEdit();
+}
+
+function settingsNotifications() {
+  alert('通知设置功能开发中，敬请期待！');
+}
+
+function settingsAbout() {
+  var version = 'v5.0 (2026-06-26)';
+  alert('止怒AI — 家长冷静助手\n\n版本：' + version + '\n\n帮助守护你和孩子的情绪。');
+}
+
+function settingsClearData() {
+  closeSettings();
+  if (!confirm('确定要清除所有数据吗？\n\n这将删除：\n• 所有打卡记录\n• 自定义名称和图标\n• 所有设置\n\n此操作不可恢复！')) return;
+  if (!confirm('最后确认一次：真的要清除所有数据吗？')) return;
+  // Clear localStorage
+  localStorage.clear();
+  // Clear IndexedDB
+  if (window.indexedDB) {
+    indexedDB.deleteDatabase('ParentCalmDB');
+  }
+  alert('数据已清除！页面将刷新。');
+  location.reload();
+}
+
 /* ========== INIT ========== */
 async function init() {
   db = await openDB();
   await migrateV2toV3();
   await ensureUserId();
 
-  // Debug mode: only show debug button when ?debug=1 in URL
-  if (new URLSearchParams(location.search).get('debug') === '1') {
+  // Debug mode: only show debug elements when ?debug=1 in URL
+  const isDebugMode = new URLSearchParams(location.search).get('debug') === '1';
+  if (isDebugMode) {
     const ph = document.getElementById('debugBtnPlaceholder');
     if (ph) ph.innerHTML = '<button class="debug-toggle" id="debugToggleBtn" onclick="toggleDebugPanel()">📊 调试</button>';
+    // Show all debug-only test buttons
+    document.querySelectorAll('.debug-only').forEach(el => {
+      if (el.id === 'demoButtons') el.style.display = 'flex';
+      else el.style.display = 'block';
+    });
   }
 
   // Load streak from DB into cache for fast UI access
@@ -3992,14 +4839,16 @@ async function init() {
   } catch(e) {}
 
   updateGreeting();
+  initAppName();
+  showOnboard();
   updateStreakDisplaySync();
   await updateIdleStatsAsync();
   renderEmotionPicker();
   await renderJournalListAsync();
   await updateJournalInsightAsync();
   await updateDataPanel();
-  // VIP disabled features for free users
-  if (!isVip) toggleVip(); // init VIP UI state
+  // 初始化会员状态
+  updateGuardMembershipUI();
   // Gauges are static HTML — no build needed
 }
 init().catch(console.error);
@@ -4014,7 +4863,6 @@ function updateGreeting() {
 function updateStreakDisplaySync() {
   const s = _streakCache;
   document.getElementById('streakNum').textContent = s.current;
-  document.getElementById('idleStreak').textContent = s.current;
   document.getElementById('idleStreak2').textContent = s.current;
 
   // Update flower & level card
@@ -4067,7 +4915,8 @@ async function updateIdleStatsAsync() {
 /* ========== VIEW SWITCHING ========== */
 function switchView(view) {
   if (view === 'guard' && !isVip) {
-    showToast('🔒 实时监测预警为会员专属功能');
+    showToast('🔒 试用已结束，开通会员后可继续使用');
+    openMembership();
     return;
   }
   if (guarding && view !== 'guard') return;
@@ -4100,25 +4949,144 @@ function switchView(view) {
   if (fab) fab.classList.toggle('visible', view === 'journal');
 }
 
-function toggleVip() {
-  isVip = !isVip;
-  const btn = document.getElementById('vipToggleBtn');
-  const banner = document.getElementById('vipUpgradeBanner');
-  const hint = document.getElementById('guardHint');
-  const startBtn = document.getElementById('btnStartGuard');
-  if (isVip) {
-    btn.textContent = '👑 会员模式';
-    btn.style.background = 'var(--blue)'; btn.style.color = 'white';
-    banner.style.display = 'none';
-    hint.innerHTML = '👆 点一下，然后放下手机<br>我会自动监测，在你想发火时提醒你';
-    startBtn.style.opacity = '1'; startBtn.style.pointerEvents = 'auto';
-  } else {
-    btn.textContent = '🆓 免费模式';
-    btn.style.background = 'var(--text-sub)'; btn.style.color = 'white';
-    banner.style.display = 'flex';
-    hint.innerHTML = '🔒 实时监测预警为会员专属<br>免费用户可浏览安抚话术和手动记录';
-    startBtn.style.opacity = '0.4'; startBtn.style.pointerEvents = 'none';
+/* ========== 会员管理 ========== */
+function checkMembership() {
+  var trialStart = localStorage.getItem('pc_trial_start');
+  var vipActivated = localStorage.getItem('pc_vip_activated');
+  var vipExpiry = localStorage.getItem('pc_vip_expiry');
+
+  // 已开通会员
+  if (vipActivated === '1' && vipExpiry) {
+    var expiry = parseInt(vipExpiry);
+    if (Date.now() < expiry) {
+      isVip = true;
+      return { isVip: true, isTrial: false, daysLeft: Math.ceil((expiry - Date.now()) / (24*60*60*1000)), vipExpiry: expiry };
+    } else {
+      // 会员过期
+      localStorage.removeItem('pc_vip_activated');
+      localStorage.removeItem('pc_vip_expiry');
+    }
   }
+
+  // 试用期
+  if (!trialStart) {
+    trialStart = String(Date.now());
+    localStorage.setItem('pc_trial_start', trialStart);
+  }
+  var elapsed = Date.now() - parseInt(trialStart);
+  var remaining = TRIAL_MS - elapsed;
+  if (remaining > 0) {
+    isVip = true;
+    return { isVip: true, isTrial: true, daysLeft: Math.ceil(remaining / (24*60*60*1000)), trialStart: parseInt(trialStart) };
+  }
+
+  // 试用到期
+  isVip = false;
+  return { isVip: false, isTrial: false, daysLeft: 0, trialExpired: true };
+}
+
+function updateGuardMembershipUI() {
+  var m = checkMembership();
+  var banner = document.getElementById('vipUpgradeBanner');
+  var hint = document.getElementById('guardHint');
+  var startBtn = document.getElementById('btnStartGuard');
+
+  // 更新设置里的会员描述
+  var desc = document.getElementById('settingsMemberDesc');
+  if (desc) {
+    if (m.isVip && m.isTrial) desc.textContent = '免费试用剩余 ' + m.daysLeft + ' 天';
+    else if (m.isVip && !m.isTrial) desc.textContent = '👑 会员有效剩余 ' + m.daysLeft + ' 天';
+    else desc.textContent = '试用已结束，点击开通会员';
+  }
+
+  if (m.isVip) {
+    if (banner) banner.style.display = 'none';
+    if (hint) hint.innerHTML = '👆 点一下，然后放下手机<br>我会自动监测，在你想发火时提醒你';
+    if (startBtn) { startBtn.style.opacity = '1'; startBtn.style.pointerEvents = 'auto'; }
+  } else {
+    if (banner) {
+      banner.style.display = 'flex';
+      document.getElementById('vipBannerTitle').textContent = '试用已结束';
+      document.getElementById('vipBannerDesc').textContent = '开通会员即可继续使用实时监测预警功能';
+    }
+    if (hint) hint.innerHTML = '🔒 实时监测预警为会员专属<br><span style="font-size:12px">免费用户可浏览安抚话术和手动记录</span>';
+    if (startBtn) { startBtn.style.opacity = '0.4'; startBtn.style.pointerEvents = 'none'; }
+  }
+}
+
+/* ========== 会员中心弹窗 ========== */
+function settingsMembership() {
+  closeSettings();
+  setTimeout(openMembership, 200);
+}
+function openMembership() {
+  var m = checkMembership();
+  var body = document.getElementById('membershipBody');
+  var html = '';
+
+  if (m.isVip && m.isTrial) {
+    // 试用中
+    var progress = Math.max(0, Math.min(100, (m.daysLeft / TRIAL_DAYS) * 100));
+    html = '<div class="membership-status-card trial">' +
+      '<div class="membership-status-icon">🎁</div>' +
+      '<div class="membership-status-title">免费试用中</div>' +
+      '<div class="membership-status-desc">剩余 ' + m.daysLeft + ' 天</div>' +
+      '<div class="membership-trial-bar"><div class="membership-trial-bar-fill" style="width:' + progress + '%"></div></div>' +
+      '</div>';
+  } else if (m.isVip && !m.isTrial) {
+    // 会员
+    var expiryDate = new Date(m.vipExpiry);
+    html = '<div class="membership-status-card vip">' +
+      '<div class="membership-status-icon">👑</div>' +
+      '<div class="membership-status-title">尊贵会员</div>' +
+      '<div class="membership-status-desc">有效期至 ' + expiryDate.getFullYear() + '-' + String(expiryDate.getMonth()+1).padStart(2,'0') + '-' + String(expiryDate.getDate()).padStart(2,'0') + '</div>' +
+      '</div>';
+  } else {
+    // 试用到期
+    html = '<div class="membership-status-card expired">' +
+      '<div class="membership-status-icon">🔒</div>' +
+      '<div class="membership-status-title">试用已结束</div>' +
+      '<div class="membership-status-desc">开通会员，继续守护情绪</div>' +
+      '</div>';
+  }
+
+  // 权益列表
+  html += '<div class="membership-benefits">' +
+    '<h5>👑 会员专属权益</h5>' +
+    '<div class="membership-benefit-item"><span class="check">✓</span> 实时语音情绪监测预警</div>' +
+    '<div class="membership-benefit-item"><span class="check">✓</span> 双通道检测（声学+语义）</div>' +
+    '<div class="membership-benefit-item"><span class="check">✓</span> 冷暴力识别与干预</div>' +
+    '<div class="membership-benefit-item"><span class="check">✓</span> 自适应学习与个性化校准</div>' +
+    '<div class="membership-benefit-item"><span class="check">✓</span> 无限次守护使用</div>' +
+    '</div>';
+
+  // 按钮
+  if (!m.isVip || m.isTrial) {
+    html += '<button class="membership-upgrade-btn" onclick="activateVip()">立即开通会员</button>';
+    html += '<div class="membership-price">¥39/月 · ¥299/年 · 永久¥699</div>';
+  } else {
+    html += '<button class="membership-upgrade-btn" style="background:linear-gradient(135deg,#4CAF50,#3E8E41);" onclick="closeMembership()">已开通，感谢支持</button>';
+  }
+
+  body.innerHTML = html;
+  document.getElementById('membershipOverlay').classList.add('active');
+}
+function closeMembership() {
+  document.getElementById('membershipOverlay').classList.remove('active');
+}
+function closeMembershipIfOverlay(e) {
+  if (e.target === e.currentTarget) closeMembership();
+}
+function activateVip() {
+  // 模拟开通（后续接入支付）
+  if (!confirm('确认开通会员？\n\n（当前为模拟开通，后续接入支付系统）\n\n会员权益：\n• 实时监测预警\n• 双通道检测\n• 冷暴力识别\n• 无限次守护')) return;
+  var expiry = Date.now() + 365 * 24 * 60 * 60 * 1000; // 暂设1年
+  localStorage.setItem('pc_vip_activated', '1');
+  localStorage.setItem('pc_vip_expiry', String(expiry));
+  isVip = true;
+  closeMembership();
+  updateGuardMembershipUI();
+  showToast('🎉 会员开通成功！感谢您的支持');
 }
 
 /* ========== GUARDING ========== */
@@ -4147,7 +5115,7 @@ async function startGuarding() {
   setTimeout(() => { btn.style.transform = ''; }, 150);
 
   if (!isVip) {
-    showGuardError('🔒 实时监测预警为会员专属功能<br><small>点击下方「免费模式」可切换体验</small>');
+    showGuardError('🔒 试用已结束，开通会员后可继续使用<br><small>点击设置 → 会员中心开通</small>');
     return;
   }
 
@@ -5622,7 +6590,11 @@ function startSemanticPolling() {
       return;
     }
   }
-  if (semanticPollActive) return;
+  if (semanticPollActive) {
+    // Already active — but ASR may have died (e.g. alert killed the onend loop).
+    // Force a clean restart so _startRecognition() actually runs.
+    stopSemanticPolling();
+  }
   semanticPollActive = true;
   _asrTencentFailed = false;
   _asrOnstartFired = false;
@@ -5630,6 +6602,7 @@ function startSemanticPolling() {
   semanticLastTriggerTime = 0;
   semanticLastResult = '';
   _semanticRestartCount = 0; // reset restart counter each session
+  _asrNoSpeechCount = 0;    // reset no-speech back-off counter
   _resetAsrHealth();
   console.log('🎤 语义通道: 启动并行监测');
   _setAsrStatus('listening', '启动中...');
@@ -5652,6 +6625,8 @@ function _startRecognition() {
   }
   // Clear any pending restart timer
   if (_semanticRestartTimer) { clearTimeout(_semanticRestartTimer); _semanticRestartTimer = null; }
+  // Reset per-cycle onstart flag so the 6s safety timeout works every cycle
+  _asrOnstartFired = false;
   // Stop previous instance if any
   if (semanticRecognition) {
     try { semanticRecognition.abort(); } catch(e) {}
@@ -5747,7 +6722,19 @@ function _startRecognition() {
     console.log('🎤 语义通道错误:', event.error, event.message || '');
     // Check non-critical errors FIRST — don't show red indicator for these
     if (event.error === 'aborted') return; // our own abort or browser interrupt, onend handles restart
-    if (event.error === 'no-speech') return; // silence is normal, don't change UI
+    if (event.error === 'no-speech') {
+      // Silence is normal; but consecutive no-speech in tight loops means Chrome is throttling us.
+      // Back off 1.5s after 3 consecutive no-speech to let Chrome release the mic lock.
+      _asrNoSpeechCount++;
+      if (_asrNoSpeechCount >= 3) {
+        _asrNoSpeechCount = 0;
+        if (_semanticRestartTimer) clearTimeout(_semanticRestartTimer);
+        _semanticRestartTimer = setTimeout(() => {
+          if (semanticPollActive && guarding && !lightAlertActive && !heavyAlertActive) _startRecognition();
+        }, 1500);
+      }
+      return;
+    }
     _setAsrStatus('error', '错误: ' + (event.error || '未知'));
     if (event.error === 'not-allowed') { semanticPollActive = false; _setAsrStatus('off', '权限被拒绝'); return; }
     // Tencent API errors (e.g. 4002 = service not enabled / permission denied)
@@ -5770,17 +6757,23 @@ function _startRecognition() {
 
   semanticRecognition.onend = function() {
     // Fires when the ASR instance disconnects.
-    // WebSpeech: fires every ~5-10s (normal cycle) → silent 300ms restart
+    // WebSpeech: fires every ~5-10s (normal cycle) → silent restart
     // TencentCloud: fires on unexpected disconnect (startup failures are handled by promise catch)
     semanticRecognition = null;
     _semanticRestartCount++;
     _asrOnendCount++;
     _updateAsrHealth();
     if (actualProvider === 'webspeech') {
-      // Normal cycle — silent 300ms restart, don't change status text
-      _semanticRestartTimer = setTimeout(() => {
-        if (semanticPollActive && guarding && !lightAlertActive && !heavyAlertActive) _startRecognition();
-      }, 300);
+      // Normal cycle — silent restart.
+      // 500ms gives Chrome enough time to release its internal mic lock before
+      // the next start() call. 300ms was too aggressive and caused Chrome to
+      // silently reject the new start(), producing onend with no audio captured.
+      // If we had no-speech back-off pending, let that timer handle the restart instead.
+      if (!_semanticRestartTimer) {
+        _semanticRestartTimer = setTimeout(() => {
+          if (semanticPollActive && guarding && !lightAlertActive && !heavyAlertActive) _startRecognition();
+        }, 500);
+      }
     } else {
       // Tencent Cloud: only reaches here on real disconnect (not startup failure)
       // Don't show "重连中" — the catch block already handled startup failure UI
@@ -5874,6 +6867,7 @@ function stopSemanticPolling() {
   _stopRecognition();
   semanticLastResult = '';
   _semanticRestartCount = 0;
+  _asrNoSpeechCount = 0;
 }
 
 // ASR indicator UI helper
@@ -6859,7 +7853,7 @@ function startHeavyBreathingGuide() {
   actions.style.display = 'none';
   scene.className = 'ha-breathe-scene';
 
-  // ── Step 1: 倒计时进度点（5个点，每个1秒 = 约5秒停留）──
+  // ── Step 1: 倒计时进度点 ──
   const dots = document.querySelectorAll('#haLeaveProgress .ha-leave-dot');
   dots.forEach(function(d) { d.classList.remove('active'); });
   let dotIdx = 0;
@@ -6868,13 +7862,13 @@ function startHeavyBreathingGuide() {
     if (dotIdx < dots.length) {
       dots[dotIdx].classList.add('active');
       dotIdx++;
-      _haBreatheTimer = setTimeout(tickDot, 1000);
+      _haBreatheTimer = setTimeout(tickDot, 600);
     } else {
       // All dots filled → transition to Step 2
       _transitionToStep2();
     }
   }
-  _haBreatheTimer = setTimeout(tickDot, 500);
+  _haBreatheTimer = setTimeout(tickDot, 300);
 }
 
 function _transitionToStep2() {
@@ -6964,13 +7958,8 @@ function _runBreathingCycles() {
     }, 4200);
   }
 
-  // ── 「准备好了吗」引导语，让用户了解接下来要跟着小人呼吸 ──
-  text.textContent = '准备好了吗？';
-  hint.textContent = '看着下面的人，跟着他一起深呼吸...';
-  _haBreatheTimer = setTimeout(function() {
-    if (!heavyAlertActive) return;
-    step();
-  }, 2500);
+  // Small delay to let the fade-in complete before starting
+  _haBreatheTimer = setTimeout(step, 500);
 }
 
 function playAlertChime() {
@@ -7067,6 +8056,8 @@ function resumeGuarding() {
   // 20 second cooldown
   setTimeout(()=>{ alertCooldown = false; }, 20000);
   monitorLoop();
+  // 恢复语义监测（heavy alert 中已停止）
+  startSemanticPolling();
   // 弹出分类弹窗（延迟让 UI 先恢复）
   setTimeout(() => showPostAlertClassify(), 600);
 }
@@ -7121,6 +8112,8 @@ async function logAndResume() {
   await renderJournalListAsync();
   await updateDataPanel();
   monitorLoop();
+  // 恢复语义监测（heavy alert 中已停止）
+  startSemanticPolling();
   // 弹出分类弹窗
   setTimeout(() => showPostAlertClassify(), 600);
 }
@@ -7331,11 +8324,8 @@ function selectAnfuAb(sceneId, age, ab) {
   const btn = document.getElementById('anfuRepairSaveBtn');
   const chipA = document.getElementById('anfuAbA');
   const chipB = document.getElementById('anfuAbB');
-  chipA.className = 'anfu-ab-chip' + (ab === 'A' ? ' selected-a' : ' unselected');
-  chipB.className = 'anfu-ab-chip' + (ab === 'B' ? ' selected-b' : ' unselected');
-  // Add checkmark to selected, remove from unselected
-  chipA.innerHTML = (ab === 'A' ? '✅ ' : '') + '🅰 场景触发（孩子确实做了这件事，我方式不当）';
-  chipB.innerHTML = (ab === 'B' ? '✅ ' : '') + '🅱 情绪迁怒（平时能控制，今天我反应过头了）';
+  chipA.className = 'anfu-ab-chip' + (ab === 'A' ? ' selected-a' : '');
+  chipB.className = 'anfu-ab-chip' + (ab === 'B' ? ' selected-b' : '');
   btn.disabled = false;
   btn.style.opacity = '1';
   btn.style.cursor = 'pointer';
@@ -7363,7 +8353,6 @@ function saveRepairFromAnfu(sceneId, age, ab) {
 function renderAnfuSceneList() {
   const list = document.getElementById('anfuSceneList');
   const detail = document.getElementById('anfuSceneDetail');
-  list.style.display = '';  // 清除可能残留的 display:none，恢复 CSS grid 布局
   detail.style.display = 'none';
   let scenes = sceneLibrary;
   if (anfuState.cat !== '全部') scenes = scenes.filter(s => s.cat === anfuState.cat);
@@ -7494,7 +8483,7 @@ function openQuickRecord() {
   document.getElementById('qrScenes').innerHTML = sceneList.join('');
   document.getElementById('qrNote').value = '';
   document.getElementById('qrAbA').className = 'quick-record-ab-btn A';
-  document.getElementById('qrAbB').className = 'quick-record-ab-btn';
+  document.getElementById('qrAbB').className = 'quick-record-ab-btn B';
   // Show
   document.getElementById('quickRecordOverlay').classList.add('active');
 }
@@ -7518,7 +8507,7 @@ function selectQrScene(el, val) {
 function selectQrAb(type) {
   qrAb = type;
   document.getElementById('qrAbA').className = 'quick-record-ab-btn A' + (type === 'A' ? ' selected' : '');
-  document.getElementById('qrAbB').className = 'quick-record-ab-btn' + (type === 'B' ? ' selected' : '');
+  document.getElementById('qrAbB').className = 'quick-record-ab-btn B' + (type === 'B' ? ' selected' : '');
 }
 
 async function saveQuickRecord() {
@@ -7589,15 +8578,15 @@ function showPostAlertClassify() {
     `<div class="classify-scene" data-sid="${s.id}" onclick="selectClsScene('${s.id}')">${s.icon} ${s.name}</div>`
   ).join('');
   document.getElementById('clsAbA').className = 'classify-ab-btn A';
-  document.getElementById('clsAbB').className = 'classify-ab-btn';
+  document.getElementById('clsAbB').className = 'classify-ab-btn B';
   document.getElementById('clsSaveBtn').disabled = true;
   document.getElementById('classifyOverlay').classList.add('active');
 }
 
 function selectClsAb(type) {
   clsAb = type;
-  document.getElementById('clsAbA').className = 'classify-ab-btn A' + (type === 'A' ? ' selected.A' : '');
-  document.getElementById('clsAbB').className = 'classify-ab-btn' + (type === 'B' ? ' selected.B' : '');
+  document.getElementById('clsAbA').className = 'classify-ab-btn A' + (type === 'A' ? ' selected' : '');
+  document.getElementById('clsAbB').className = 'classify-ab-btn B' + (type === 'B' ? ' selected' : '');
   document.getElementById('clsSaveBtn').disabled = false;
 }
 
@@ -7934,7 +8923,7 @@ function switchDashTab(tab) {
 }
 
 /* ========== SUMMARY CARDS ========== */
-async function renderSummaryCards(triggers, journals, streakData) {
+async function renderSummaryCards(triggers, journals, interventions, repairs) {
   const now = new Date();
   const weekAgo = new Date(now.getTime() - 7*86400000);
   const twoWeeksAgo = new Date(now.getTime() - 14*86400000);
@@ -7948,30 +8937,39 @@ async function renderSummaryCards(triggers, journals, streakData) {
     const d = new Date(t.ts);
     return d >= twoWeeksAgo && d < weekAgo;
   });
-  const thisWeekJ = journals.filter(j => new Date(j.ts) >= weekAgo);
-
-  // Avg anger score（仅自动预警有 anger_score）
   const autoThisWeek = autoTriggers.filter(t => new Date(t.ts) >= weekAgo);
-  const avgScore = autoThisWeek.length ? Math.round(autoThisWeek.reduce((s,t)=>s+(t.anger_score||0),0)/autoThisWeek.length) : 0;
-  const autoLastWeek = autoTriggers.filter(t => {
-    const d = new Date(t.ts);
+  const manualThisWeek = manualTriggers.filter(t => new Date(t.ts) >= weekAgo);
+
+  // 安抚话术使用次数（本周 repair_sessions）
+  const repairsThisWeek = repairs.filter(r => new Date(r.ts) >= weekAgo);
+  const repairCount = repairsThisWeek.length;
+  const repairsLastWeek = repairs.filter(r => {
+    const d = new Date(r.ts);
     return d >= twoWeeksAgo && d < weekAgo;
   });
-  const prevAvg = autoLastWeek.length ? Math.round(autoLastWeek.reduce((s,t)=>s+(t.anger_score||0),0)/autoLastWeek.length) : 0;
+  const repairLastCount = repairsLastWeek.length;
 
-  // Intervention rate（仅自动预警有 intervention_type）
-  const intervened = autoThisWeek.filter(t => t.intervention_type).length;
-  const intRate = autoThisWeek.length ? Math.round(intervened / autoThisWeek.length * 100) : 0;
+  // 干预响应率：本周有干预记录（intervention_log）的预警 / 本周预警总数
+  const autoThisWeekIds = new Set(autoThisWeek.map(t => t.id));
+  const intervThisWeek = interventions.filter(i => {
+    if (!autoThisWeekIds.has(i.trigger_id)) return false;
+    return new Date(i.ts) >= weekAgo;
+  });
+  const intervenedTriggerIds = new Set(intervThisWeek.map(i => i.trigger_id));
+  const intRate = autoThisWeek.length ? Math.round(intervenedTriggerIds.size / autoThisWeek.length * 100) : 0;
 
   // Streak
   const sn = document.getElementById('streakNum');
   const streakDays = sn ? parseInt(sn.textContent) || 0 : 0;
 
-  // 止怒数据（从 streakData 获取）
-  const totalCalmSuccess = (streakData && streakData.total_calm_success) || 0;
-  const totalCalmFail = (streakData && streakData.total_calm_fail) || 0;
-  const totalCalm = totalCalmSuccess + totalCalmFail;
-  const calmRate = totalCalm > 0 ? Math.round(totalCalmSuccess / totalCalm * 100) : 0;
+  // 止怒成功率：基于 intervention_log 的用户真实操作
+  // resumed_guarding = 用户点了"我冷静了" → 成功
+  // logged_and_resumed = 用户点了"记录发火" → 失败
+  const intervThisWeekAll = interventions.filter(i => new Date(i.ts) >= weekAgo);
+  const calmSuccess = intervThisWeekAll.filter(i => i.selected_action === 'resumed_guarding').length;
+  const calmFail    = intervThisWeekAll.filter(i => i.selected_action === 'logged_and_resumed').length;
+  const calmTotal = calmSuccess + calmFail;
+  const calmRate = calmTotal > 0 ? Math.round(calmSuccess / calmTotal * 100) : 0;
 
   const c = document.getElementById('dashSummary');
   let changeStr = '';
@@ -7984,20 +8982,20 @@ async function renderSummaryCards(triggers, journals, streakData) {
   }
 
   // 手动记录数
-  const manualThisWeek = manualTriggers.filter(t => new Date(t.ts) >= weekAgo);
   const manualHint = manualThisWeek.length ? '<div style="font-size:10px;color:var(--coral);margin-top:2px;">含手动'+manualThisWeek.length+'次</div>' : '';
 
+  const upDownClass = (thisWeek.length > lastWeek.length && lastWeek.length) ? ' up' : (thisWeek.length < lastWeek.length ? ' down' : '');
   c.innerHTML =
-    '<div class="dash-card"><div class="card-value'+(thisWeek.length > lastWeek.length && lastWeek.length ? ' up' : thisWeek.length < lastWeek.length ? ' down' : '')+'">' + thisWeek.length + '</div><div class="card-label">本周发火次数</div>'+changeStr+manualHint+'</div>' +
-    '<div class="dash-card"><div class="card-value">' + autoTriggers.length + '</div><div class="card-label">预警总次数</div><div style="font-size:10px;color:var(--text-sub);margin-top:2px;">自动监测</div></div>' +
-    '<div class="dash-card"><div class="card-value" style="color:' + (calmRate >= 50 ? 'var(--green)' : '#FF9800') + '">' + calmRate + '%</div><div class="card-label">止怒成功率</div><div style="font-size:10px;color:var(--text-sub);margin-top:2px;">成功'+totalCalmSuccess+'/尝试'+totalCalm+'</div></div>' +
-    '<div class="dash-card"><div class="card-value" style="color:var(--green)">' + avgScore + '</div><div class="card-label">平均情绪评分'+(prevAvg ? '（上周'+prevAvg+'）' : '')+'</div></div>' +
-    '<div class="dash-card"><div class="card-value">' + intRate + '%</div><div class="card-label">干预响应率</div></div>' +
-    '<div class="dash-card"><div class="card-value" style="color:var(--green)">' + streakDays + '</div><div class="card-label">连续冷静天数</div></div>';
+    '<div class="dash-card"><span class="card-icon">🔥</span><div class="card-value'+upDownClass+'">' + thisWeek.length + '</div><div class="card-label">本周发火次数</div>'+changeStr+(manualThisWeek.length ? '<div style="font-size:10px;color:var(--coral);margin-top:2px;">含手动'+manualThisWeek.length+'次</div>' : '')+'</div>' +
+    '<div class="dash-card"><span class="card-icon">🛡️</span><div class="card-value">' + autoThisWeek.length + '</div><div class="card-label">本周预警次数</div><div style="font-size:10px;color:var(--text-sub);margin-top:2px;">自动监测</div></div>' +
+    '<div class="dash-card"><span class="card-icon">✅</span><div class="card-value" style="color:' + (calmRate >= 50 ? 'var(--green)' : (calmTotal === 0 ? 'var(--text-sub)' : '#FF9800')) + '">' + (calmTotal === 0 ? '--' : calmRate + '%') + '</div><div class="card-label">止怒成功率</div><div style="font-size:10px;color:var(--text-sub);margin-top:2px;">' + (calmTotal === 0 ? '冷静后点按钮记录' : '忍住' + calmSuccess + '/共' + calmTotal + '次') + '</div></div>' +
+    '<div class="dash-card"><span class="card-icon">📊</span><div class="card-value" style="color:var(--green)">' + repairCount + '</div><div class="card-label">安抚话术使用</div><div style="font-size:10px;color:var(--text-sub);margin-top:2px;">'+(repairLastCount ? '上周 '+repairLastCount+' 次' : '发火后去安抚页修复')+'</div></div>' +
+    '<div class="dash-card"><span class="card-icon">💡</span><div class="card-value">' + intRate + '%</div><div class="card-label">干预响应率</div><div style="font-size:10px;color:var(--text-sub);margin-top:2px;">预警后采取行动</div></div>' +
+    '<div class="dash-card"><span class="card-icon">🌿</span><div class="card-value" style="color:var(--green)">' + streakDays + '</div><div class="card-label">连续冷静天数</div><div style="font-size:10px;color:var(--green);margin-top:2px;opacity:0.7;">'+(streakDays>0?'继续保持！':'今天开始记录')+'</div></div>';
 }
 
 /* ========== 鼓励话语 ========== */
-function renderEncouragement(triggers, journals, streakData) {
+function renderEncouragement(triggers, journals, interventions) {
   const el = document.getElementById('dashEncouragement');
   if (!el) return;
 
@@ -8011,10 +9009,12 @@ function renderEncouragement(triggers, journals, streakData) {
     return d >= twoWeeksAgo && d < weekAgo;
   });
 
-  const totalCalmSuccess = (streakData && streakData.total_calm_success) || 0;
-  const totalCalmFail = (streakData && streakData.total_calm_fail) || 0;
-  const totalCalm = totalCalmSuccess + totalCalmFail;
-  const calmRate = totalCalm > 0 ? Math.round(totalCalmSuccess / totalCalm * 100) : 0;
+  // 止怒成功率（与 renderSummaryCards 保持一致：intervention_log 的用户操作）
+  const intervThisWeekAll = interventions.filter(i => new Date(i.ts) >= weekAgo);
+  const calmSuccess = intervThisWeekAll.filter(i => i.selected_action === 'resumed_guarding').length;
+  const calmFail    = intervThisWeekAll.filter(i => i.selected_action === 'logged_and_resumed').length;
+  const calmTotal = calmSuccess + calmFail;
+  const calmRate = calmTotal > 0 ? Math.round(calmSuccess / calmTotal * 100) : 0;
 
   // 构建鼓励话语
   let icon = '💪';
@@ -8058,7 +9058,7 @@ function renderEncouragement(triggers, journals, streakData) {
   }
 
   // 止怒成功率建议
-  if (totalCalm >= 3) {
+  if (calmTotal >= 3) {
     if (calmRate >= 70) {
       tips.push('你的止怒成功率高达 ' + calmRate + '%，非常优秀！建议尝试帮助伴侣或朋友，教是最好的学。');
     } else if (calmRate >= 40) {
@@ -8114,7 +9114,7 @@ function renderTrendChart(triggers) {
     if (d.triggers.length) d.avgScore = Math.round(d.triggers.reduce((s,t)=>s+(t.anger_score||0),0)/d.triggers.length);
   });
 
-  const W = 340, H = 140, PAD = 28, BOTTOM = 20;
+  const W = 340, H = 160, PAD = 30, BOTTOM = 22;
   const maxVal = Math.max(1, ...days.map(d=>d.triggers.length));
   const maxScore = Math.max(1, ...days.map(d=>d.avgScore));
 
@@ -8131,14 +9131,14 @@ function renderTrendChart(triggers) {
   days.forEach((d, i) => {
     const x = PAD + (W-PAD*2) * i / 6;
     const h = maxVal ? (d.triggers.length / maxVal) * (H - PAD - BOTTOM) : 0;
-    bars += '<rect x="'+(x-7).toFixed(1)+'" y="'+(H-BOTTOM-h).toFixed(1)+'" width="14" height="'+Math.max(h,1).toFixed(1)+'" rx="3" fill="rgba(232,115,90,0.35)"/>';
+    bars += '<rect x="'+(x-9).toFixed(1)+'" y="'+(H-BOTTOM-h).toFixed(1)+'" width="18" height="'+Math.max(h,1).toFixed(1)+'" rx="4" fill="rgba(232,115,90,0.28)"/>';
   });
 
   // Labels
   let dayLabels = '';
   days.forEach((d, i) => {
     const x = PAD + (W-PAD*2) * i / 6;
-    dayLabels += '<text x="'+x.toFixed(1)+'" y="'+(H-4)+'" text-anchor="middle" font-size="9" fill="#B0A49A">'+d.dayName+'</text>';
+    dayLabels += '<text x="'+x.toFixed(1)+'" y="'+(H-5)+'" text-anchor="middle" font-size="10" fill="#B0A49A">'+d.dayName+'</text>';
   });
 
   // Value labels on top of bars
@@ -8147,14 +9147,20 @@ function renderTrendChart(triggers) {
     if (!d.triggers.length) return;
     const x = PAD + (W-PAD*2) * i / 6;
     const h = maxVal ? (d.triggers.length / maxVal) * (H - PAD - BOTTOM) : 0;
-    valLabels += '<text x="'+x.toFixed(1)+'" y="'+(H-BOTTOM-h-5).toFixed(1)+'" text-anchor="middle" font-size="10" font-weight="600" fill="#E8735A">'+d.triggers.length+'</text>';
+    valLabels += '<text x="'+x.toFixed(1)+'" y="'+(H-BOTTOM-h-7).toFixed(1)+'" text-anchor="middle" font-size="11" font-weight="700" fill="#E8735A">'+d.triggers.length+'</text>';
   });
 
+  // 横格线
+  const gridLines = [0.25, 0.5, 0.75].map(ratio => {
+    const y = H - BOTTOM - ratio * (H - PAD - BOTTOM);
+    return '<line x1="'+PAD+'" y1="'+y.toFixed(1)+'" x2="'+(W-PAD/2)+'" y2="'+y.toFixed(1)+'" stroke="#EDE8E3" stroke-width="1" stroke-dasharray="3,3"/>';
+  }).join('');
+
   c.innerHTML = '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">'+
-    '<line x1="'+PAD+'" y1="'+(H-BOTTOM)+'" x2="'+(W-PAD)+'" y2="'+(H-BOTTOM)+'" stroke="#EDE8E3" stroke-width="1"/>'+
-    '<line x1="'+PAD+'" y1="'+PAD+'" x2="'+PAD+'" y2="'+(H-BOTTOM)+'" stroke="#EDE8E3" stroke-width="1"/>'+
-    '<text x="4" y="'+(PAD+4)+'" font-size="9" fill="#B0A49A">'+maxScore+'</text>'+
-    '<text x="4" y="'+(H-BOTTOM-2)+'" font-size="9" fill="#B0A49A">0</text>'+
+    gridLines +
+    '<line x1="'+PAD+'" y1="'+(H-BOTTOM)+'" x2="'+(W-PAD/2)+'" y2="'+(H-BOTTOM)+'" stroke="#D8D2CB" stroke-width="1.5"/>'+
+    '<text x="'+(PAD-4)+'" y="'+(PAD+4)+'" text-anchor="end" font-size="9" fill="#C0B8B0">'+maxVal+'</text>'+
+    '<text x="'+(PAD-4)+'" y="'+(H-BOTTOM-1)+'" text-anchor="end" font-size="9" fill="#C0B8B0">0</text>'+
     bars + valLabels + dayLabels +
     '</svg>';
 }
@@ -8180,7 +9186,7 @@ function renderABDonut(triggers, journals) {
   const total = aCount + bCount + unkCount;
   if (!total) { c.innerHTML = '<div style="text-align:center;color:var(--text-light);font-size:13px;padding:16px;">还没有分类数据<br><span style="font-size:11px;">记录发火原因后这里会显示分析</span></div>'; return; }
 
-  const size = 140, cx = 70, cy = 70, r = 55, sw = 14;
+  const size = 150, cx = 75, cy = 75, r = 58, sw = 16;
   let aAngle = aCount/total * Math.PI * 2;
   let bAngle = bCount/total * Math.PI * 2;
   let uAngle = unkCount/total * Math.PI * 2;
@@ -8195,22 +9201,38 @@ function renderABDonut(triggers, journals) {
     return 'M '+x1.toFixed(1)+' '+y1.toFixed(1)+' A '+r+' '+r+' 0 '+large+' 1 '+x2.toFixed(1)+' '+y2.toFixed(1);
   }
 
+  const legendItems = [
+    { color:'#E8735A', label:'A·孩子触发', count: aCount, pct: Math.round(aCount/total*100) },
+    { color:'#E8A850', label:'B·家长迁怒', count: bCount, pct: Math.round(bCount/total*100) },
+    { color:'#C8C0B8', label:'未分类', count: unkCount, pct: Math.round(unkCount/total*100) },
+  ].filter(x => x.count > 0);
+
+  const legendHtml = legendItems.map(item =>
+    '<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;">'+
+    '<span style="width:10px;height:10px;border-radius:50%;background:'+item.color+';flex-shrink:0;display:inline-block;"></span>'+
+    '<span style="font-size:12px;color:var(--text-sub);">'+item.label+'</span>'+
+    '<span style="font-size:12px;font-weight:700;color:var(--text);margin-left:auto;padding-left:8px;">'+item.count+'次</span>'+
+    '<span style="font-size:11px;color:var(--text-light);width:32px;text-align:right;">'+item.pct+'%</span>'+
+    '</div>'
+  ).join('');
+
+  const warnHtml = bCount > aCount ?
+    '<div style="margin-top:10px;padding:8px 10px;background:rgba(232,115,90,0.08);border-radius:8px;font-size:11px;color:var(--coral);font-weight:600;">⚠️ 迁怒占比偏高，注意自我觉察</div>' :
+    (aCount > 0 && bCount > 0 && aCount > bCount*2 ?
+    '<div style="margin-top:10px;padding:8px 10px;background:rgba(107,170,125,0.08);border-radius:8px;font-size:11px;color:var(--green);font-weight:600;">✅ 大多数发火是孩子行为触发</div>' : '');
+
   c.innerHTML =
-    '<div style="display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;">'+
-    '<svg viewBox="0 0 '+size+' '+size+'" width="'+size+'" height="'+size+'" xmlns="http://www.w3.org/2000/svg">'+
+    '<div style="display:flex;align-items:center;gap:18px;flex-wrap:nowrap;">'+
+    '<svg viewBox="0 0 '+size+' '+size+'" width="'+size+'" height="'+size+'" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">'+
+    '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#F0EDEA" stroke-width="'+sw+'"/>'+
     '<path d="'+arc(aAngle,0)+'" stroke="#E8735A" stroke-width="'+sw+'" fill="none" stroke-linecap="round"/>'+
     '<path d="'+arc(bAngle,aAngle)+'" stroke="#E8A850" stroke-width="'+sw+'" fill="none" stroke-linecap="round"/>'+
-    '<path d="'+arc(uAngle,aAngle+bAngle)+'" stroke="#D0C8C0" stroke-width="'+sw+'" fill="none" stroke-linecap="round"/>'+
-    '<text x="'+cx+'" y="'+cy+'" text-anchor="middle" font-size="16" font-weight="800" fill="var(--text)">'+total+'</text>'+
-    '<text x="'+cx+'" y="'+(cy+16)+'" text-anchor="middle" font-size="10" fill="var(--text-sub)">次</text>'+
+    '<path d="'+arc(uAngle,aAngle+bAngle)+'" stroke="#C8C0B8" stroke-width="'+sw+'" fill="none" stroke-linecap="round"/>'+
+    '<text x="'+cx+'" y="'+(cy+6)+'" text-anchor="middle" font-size="20" font-weight="900" fill="var(--text)">'+total+'</text>'+
+    '<text x="'+cx+'" y="'+(cy+20)+'" text-anchor="middle" font-size="10" fill="var(--text-sub)">次记录</text>'+
     '</svg>'+
-    '<div style="font-size:12px;line-height:2;">'+
-    '<div>🔴 A·孩子犯错：<strong>'+aCount+'</strong> 次（'+Math.round(aCount/total*100)+'%）</div>'+
-    '<div>🟠 B·家长迁怒：<strong>'+bCount+'</strong> 次（'+Math.round(bCount/total*100)+'%）</div>'+
-    '<div>⚪ 未分类：<strong>'+unkCount+'</strong> 次</div>'+
-    (bCount > aCount ? '<div style="color:var(--coral);font-weight:600;margin-top:4px;">⚠️ 迁怒占比偏高，注意自我觉察</div>' : '')+
-    (aCount > 0 && bCount > 0 && aCount > bCount*2 ? '<div style="color:var(--green);font-weight:600;margin-top:4px;">✅ 大多数发火是孩子行为触发</div>' : '')+
-    '</div></div>';
+    '<div style="flex:1;min-width:0;">'+legendHtml+warnHtml+'</div>'+
+    '</div>';
 }
 
 /* ========== HOURLY DISTRIBUTION ========== */
@@ -8603,7 +9625,8 @@ function formatDate(d) { return (d.getMonth()+1)+'/'+d.getDate(); }
 async function renderDashboard() {
   const triggers = await dbGetAll('trigger_events');
   const journals = await dbGetAll('journal_entries');
-  const streakData = await getStreakData();
+  const interventions = await dbGetAll('intervention_log');
+  const repairs = await dbGetAll('repair_sessions');
 
   const hasData = triggers.length + journals.length > 0;
   document.getElementById('dashEmpty').style.display = hasData ? 'none' : 'block';
@@ -8616,8 +9639,8 @@ async function renderDashboard() {
 
   if (!hasData) return;
 
-  renderSummaryCards(triggers, journals, streakData);
-  renderEncouragement(triggers, journals, streakData);
+  renderSummaryCards(triggers, journals, interventions, repairs);
+  renderEncouragement(triggers, journals, interventions);
   if (triggers.length >= 2) renderTrendChart(triggers);
   if (triggers.length >= 1) renderABDonut(triggers, journals);
   if (triggers.length >= 2) renderHourChart(triggers);
@@ -8642,6 +9665,8 @@ async function renderDashboard() {
 /* Training state */
 let trainState = {
   selectedLevel: null,  // Current browsing level index
+  selectedSceneId: null, // Selected scene from sceneLibrary for contextual training
+  expandedCat: null,     // Which category is expanded (for scene picker UI)
   activeExercise: null, // Currently running exercise
   timerInterval: null,
   timerSeconds: 0,
@@ -8717,11 +9742,111 @@ const trainingLevels = [
   }
 ];
 
+/* ========== SCENE SELECTOR ========== */
+const SCENE_CATEGORIES = ['学习相关','习惯相关','情绪相关','生活相关'];
+
+function renderSceneSelector() {
+  const catChips = document.getElementById('trainCatChips');
+  const sceneGrid = document.getElementById('trainSceneGrid');
+  const scenePicker = document.getElementById('trainScenePicker');
+
+  // Category chips — use expandedCat for active state, selectedSceneId for "picked" highlight
+  let selScene = null;
+  if (trainState.selectedSceneId) {
+    selScene = sceneLibrary.find(s => s.id === trainState.selectedSceneId);
+  }
+
+  catChips.innerHTML = SCENE_CATEGORIES.map(cat => {
+    const isExpanded = trainState.expandedCat === cat;
+    const hasSelection = selScene && selScene.cat === cat;
+    return '<button class="train-cat-chip'+(isExpanded?' active':'')+(hasSelection?' has-selection':'')+'" onclick="toggleSceneCat(\''+cat+'\')">'+
+      (cat==='学习相关'?'📝':cat==='习惯相关'?'🛏️':cat==='情绪相关'?'💢':'🏠')+' '+cat+
+    '</button>';
+  }).join('');
+
+  // "通用练习" chip
+  const noScene = !selScene;
+  catChips.innerHTML += '<button class="train-cat-chip'+(noScene?' selected-scene':'')+'" onclick="clearTrainScene()">🔓 通用练习</button>';
+
+  // Scene grid for expanded category
+  if (trainState.expandedCat) {
+    const scenes = sceneLibrary.filter(s => s.cat === trainState.expandedCat);
+    sceneGrid.innerHTML = scenes.map(s => {
+      const isPicked = trainState.selectedSceneId === s.id;
+      return '<button class="train-scene-chip'+(isPicked?' picked':'')+'" onclick="pickTrainScene(\''+s.id+'\')">'+s.icon+' '+s.name+'</button>';
+    }).join('');
+    scenePicker.classList.add('open');
+  } else {
+    sceneGrid.innerHTML = '';
+    scenePicker.classList.remove('open');
+  }
+}
+
+function toggleSceneCat(cat) {
+  // Toggle: if already expanded, collapse; else expand this category
+  if (trainState.expandedCat === cat) {
+    trainState.expandedCat = null;
+  } else {
+    trainState.expandedCat = cat;
+  }
+  renderSceneSelector();
+}
+
+function pickTrainScene(id) {
+  trainState.selectedSceneId = id;
+  renderSceneSelector();
+  // Re-render exercise list if a level is selected
+  if (trainState.selectedLevel !== null) {
+    const lv = trainingLevels[trainState.selectedLevel];
+    renderExerciseList(lv);
+  }
+  // Re-render level progress to show scene badge
+  dbGetAll('training_sessions').then(s => renderLevelProgress(s));
+}
+
+function clearTrainScene() {
+  trainState.selectedSceneId = null;
+  renderSceneSelector();
+  if (trainState.selectedLevel !== null) {
+    const lv = trainingLevels[trainState.selectedLevel];
+    renderExerciseList(lv);
+  }
+  dbGetAll('training_sessions').then(s => renderLevelProgress(s));
+}
+
+/* Inject scene context into exercise content */
+function getSceneContext() {
+  if (!trainState.selectedSceneId) return null;
+  return sceneLibrary.find(s => s.id === trainState.selectedSceneId) || null;
+}
+
+function sceneContextBanner(scene) {
+  if (!scene) return '';
+  return '<div class="scene-context-banner">'+
+    '<span class="scene-context-icon">🎯</span>'+
+    '<div class="scene-context-text">'+
+      '<strong>针对练习：'+esc(scene.icon)+' '+esc(scene.name)+'</strong>'+
+      '<span class="scene-context-desc">'+esc(scene.scene)+'</span>'+
+    '</div>'+
+    '<button class="scene-context-change" onclick="changeSceneFromOverlay()">更换</button>'+
+  '</div>';
+}
+
+function changeSceneFromOverlay() {
+  closeTrainOverlay();
+  showLevelList();
+  renderSceneSelector();
+  document.getElementById('trainScenePicker').scrollIntoView({behavior:'smooth'});
+}
+
 /* ========== TRAINING VIEW RENDER ========== */
 async function renderTrainView() {
   const sessions = await dbGetAll('training_sessions');
   trainState.selectedLevel = null;
   document.getElementById('exerciseDetail').style.display = 'none';
+
+  // Scene selector
+  renderSceneSelector();
 
   // Streak
   updateTrainStreak(sessions);
@@ -8871,16 +9996,18 @@ function startExercise(exKey) {
 
   const overlay = document.getElementById('trainOverlay');
   const panel = document.getElementById('trainPanel');
-  document.getElementById('trainPanelTitle').textContent = currentExerciseData.icon+' '+currentExerciseData.name;
+  const scene = getSceneContext();
+  const titleExtra = scene ? ' · '+scene.icon+scene.name : '';
+  document.getElementById('trainPanelTitle').textContent = currentExerciseData.icon+' '+currentExerciseData.name+titleExtra;
   overlay.classList.add('active');
   panel.scrollTop = 0;
 
   if (currentExerciseData.type === 'timer') {
-    renderTimerExercise(currentExerciseData);
+    renderTimerExercise(currentExerciseData, scene);
   } else if (currentExerciseData.type === 'reflect') {
-    renderReflectExercise(currentExerciseData);
+    renderReflectExercise(currentExerciseData, scene);
   } else if (currentExerciseData.type === 'challenge') {
-    renderChallengeExercise(currentExerciseData);
+    renderChallengeExercise(currentExerciseData, scene);
   }
 }
 
@@ -8897,12 +10024,16 @@ function clearTrainTimer() {
 }
 
 /* ===== TIMER EXERCISE ===== */
-function renderTimerExercise(ex) {
+function renderTimerExercise(ex, scene) {
   const content = document.getElementById('trainPanelContent');
   trainState.timerSeconds = ex.duration;
   trainState.timerRunning = false;
 
+  var sceneBnr = scene ? sceneContextBanner(scene) : '';
+  var sceneHint = scene ? '<div style="font-size:12px;color:var(--coral);margin-top:4px;text-align:center;">想象你正面对「'+esc(scene.name)+'」的情景做练习</div>' : '';
+
   content.innerHTML =
+    sceneBnr +
     '<div class="timer-display">'+
       '<div class="timer-circle-wrap">'+
         '<div class="timer-circle-bg"></div>'+
@@ -8911,6 +10042,7 @@ function renderTimerExercise(ex) {
       '</div>'+
       '<div class="timer-instruction">'+esc(ex.instruction)+'</div>'+
       '<div class="timer-sub">'+esc(ex.subInstruction||'')+'</div>'+
+      sceneHint +
       '<div style="margin-top:16px;">'+
         '<button class="btn-train-primary start" id="btnTimerAction" onclick="toggleTimer()">▶️ 开始练习</button>'+
       '</div>'+
@@ -8950,7 +10082,11 @@ function toggleTimer() {
 
 function timerComplete() {
   const content = document.getElementById('trainPanelContent');
+  const scene = getSceneContext();
+  var sceneBnr = scene ? sceneContextBanner(scene) : '';
+  var sceneNote = scene ? esc(scene.name) : '';
   content.innerHTML =
+    sceneBnr +
     '<div class="train-complete">'+
       '<div class="train-complete-icon">🎉</div>'+
       '<div class="train-complete-title">练习完成！</div>'+
@@ -8963,18 +10099,25 @@ function timerComplete() {
 }
 
 /* ===== REFLECT EXERCISE ===== */
-function renderReflectExercise(ex) {
+function renderReflectExercise(ex, scene) {
   const content = document.getElementById('trainPanelContent');
   let qHtml = ex.questions.map((q, i) =>
     '<div class="reflect-question">'+(i+1)+'. '+esc(q)+'</div>'+
     '<textarea class="reflect-textarea" id="refAnswer'+i+'" placeholder="写下你的想法..."></textarea>'
   ).join('');
 
+  var sceneBnr = scene ? sceneContextBanner(scene) : '';
+  // If scene selected, use scene description; otherwise show original exercise scenario
+  var scenarioText = scene
+    ? '<span style="font-weight:600;color:var(--coral);">🎯 '+esc(scene.name)+'：'+esc(scene.scene)+'</span>'
+    : esc(ex.scenario);
+
   content.innerHTML =
+    sceneBnr +
     '<div class="reflect-content">'+
       '<div class="reflect-scenario">'+
         '<div class="reflect-scenario-label">📖 情景</div>'+
-        '<div>'+esc(ex.scenario).replace(/\n/g,'<br>')+'</div>'+
+        '<div>'+scenarioText.replace(/\n/g,'<br>')+'</div>'+
       '</div>'+
       qHtml+
       '<button class="btn-train-primary done" onclick="saveReflectSession()">✅ 完成反思</button>'+
@@ -8987,6 +10130,7 @@ async function saveReflectSession() {
     currentExerciseData.questions.forEach((_, i) => {
       const ta = document.getElementById('refAnswer'+i);
       if (ta && ta.value.trim()) answers.push(ta.value.trim());
+      else answers.push('');
     });
   }
   await dbPut('training_sessions', {
@@ -8994,20 +10138,24 @@ async function saveReflectSession() {
     exercise_key: currentExerciseData.key,
     exercise_type: 'reflect',
     completed: true,
-    reflection_note: answers.join(' | ')
+    answers: answers,
+    reflection_note: answers.filter(a=>a).join(' | ')
   });
   showToast('反思记录已保存 🎯');
   addPoints('training_done').catch(()=>{});
   closeTrainOverlay();
-  await renderTrainView();
   if (trainState.selectedLevel !== null) {
     const lv = trainingLevels[trainState.selectedLevel];
+    document.getElementById('exerciseDetail').style.display = 'block';
+    document.getElementById('levelProgressSection').style.display = 'none';
     await renderExerciseList(lv);
+  } else {
+    showLevelList();
   }
 }
 
 /* ===== CHALLENGE EXERCISE ===== */
-function renderChallengeExercise(ex) {
+function renderChallengeExercise(ex, scene) {
   const content = document.getElementById('trainPanelContent');
   let stepsHtml = ex.steps.map((s, i) =>
     '<div class="challenge-step">'+
@@ -9016,8 +10164,13 @@ function renderChallengeExercise(ex) {
     '</div>'
   ).join('');
 
+  var sceneBnr = scene ? sceneContextBanner(scene) : '';
+  var sceneNote = scene ? '<div style="font-size:12px;color:var(--coral);margin-bottom:10px;padding:6px 10px;background:#FFF0EC;border-radius:8px;">💡 这次亲子挑战针对的是 <strong>'+esc(scene.icon)+' '+esc(scene.name)+'</strong> 场景，可以和孩子一起讨论这个情况</div>' : '';
+
   content.innerHTML =
+    sceneBnr +
     '<div class="challenge-content">'+
+      sceneNote +
       '<div class="challenge-steps">'+stepsHtml+'</div>'+
       (ex.postReflect ? '<div style="font-size:13px;color:var(--text-sub);margin-bottom:12px;line-height:1.6;">💡 '+esc(ex.postReflect)+'</div>' : '')+
       '<textarea class="reflect-textarea" id="challengeNote" placeholder="记录这次挑战的体验..."></textarea>'+
@@ -9037,10 +10190,13 @@ async function saveChallengeSession() {
   showToast('挑战完成！继续加油 🎯');
   addPoints('training_done').catch(()=>{});
   closeTrainOverlay();
-  await renderTrainView();
   if (trainState.selectedLevel !== null) {
     const lv = trainingLevels[trainState.selectedLevel];
+    document.getElementById('exerciseDetail').style.display = 'block';
+    document.getElementById('levelProgressSection').style.display = 'none';
     await renderExerciseList(lv);
+  } else {
+    showLevelList();
   }
 }
 
@@ -9057,19 +10213,45 @@ async function saveTrainSession() {
   showToast('训练完成！积少成多 🎯');
   addPoints('training_done').catch(()=>{});
   closeTrainOverlay();
-  await renderTrainView();
   if (trainState.selectedLevel !== null) {
     const lv = trainingLevels[trainState.selectedLevel];
+    document.getElementById('exerciseDetail').style.display = 'block';
+    document.getElementById('levelProgressSection').style.display = 'none';
     await renderExerciseList(lv);
+  } else {
+    showLevelList();
   }
 }
 
 /* ========== TRAINING HISTORY ========== */
+let trainHistoryAll = [];
+let trainHistoryPage = 1;
+const TRAIN_HISTORY_PER_PAGE = 5;
+
 async function renderTrainHistory(sessions) {
-  const list = document.getElementById('trainHistoryList');
   if (!sessions) sessions = await dbGetAll('training_sessions');
   sessions.sort((a, b) => b.ts.localeCompare(a.ts));
-  if (!sessions.length) { list.innerHTML = '<div class="journal-empty">还没有训练记录</div>'; return; }
+  trainHistoryAll = sessions;
+  trainHistoryPage = 1;
+  renderTrainHistoryPage();
+}
+
+function renderTrainHistoryPage() {
+  const list = document.getElementById('trainHistoryList');
+  const pgBar = document.getElementById('trainPagination');
+  const sessions = trainHistoryAll;
+  if (!sessions.length) {
+    list.innerHTML = '<div class="journal-empty">还没有训练记录</div>';
+    pgBar.style.display = 'none';
+    return;
+  }
+
+  const totalPages = Math.ceil(sessions.length / TRAIN_HISTORY_PER_PAGE);
+  if (trainHistoryPage > totalPages) trainHistoryPage = totalPages;
+  if (trainHistoryPage < 1) trainHistoryPage = 1;
+
+  const start = (trainHistoryPage - 1) * TRAIN_HISTORY_PER_PAGE;
+  const chunk = sessions.slice(start, start + TRAIN_HISTORY_PER_PAGE);
 
   // Build exercise name lookup
   const exNameMap = {};
@@ -9077,11 +10259,12 @@ async function renderTrainHistory(sessions) {
     lv.exercises.forEach(e => { exNameMap[e.key] = { name:e.name, icon:e.icon, type:e.type }; });
   });
 
-  list.innerHTML = sessions.slice(0, 30).map(s => {
+  list.innerHTML = chunk.map((s, i) => {
+    const globalIdx = start + i;
     const d = new Date(s.ts);
     const ts = (d.getMonth()+1)+'月'+d.getDate()+'日 '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
     const exInfo = exNameMap[s.exercise_key] || { name:s.exercise_key, icon:'🎯', type:'timer' };
-    return '<div class="train-history-card">'+
+    return '<div class="train-history-card" onclick="viewTrainDetail('+globalIdx+')">'+
       '<div class="train-history-dot '+exInfo.type+'"></div>'+
       '<div style="flex:1;">'+
         '<div class="train-history-name">'+exInfo.icon+' '+exInfo.name+'</div>'+
@@ -9090,12 +10273,185 @@ async function renderTrainHistory(sessions) {
       '</div>'+
     '</div>';
   }).join('');
-  if (sessions.length > 30) list.innerHTML += '<div style="text-align:center;font-size:12px;color:var(--text-light);padding:8px;">仅显示最近 30 条记录</div>';
+
+  // Pagination bar
+  if (totalPages <= 1) {
+    pgBar.style.display = 'none';
+  } else {
+    pgBar.style.display = 'flex';
+    pgBar.innerHTML = buildPaginationHtml(trainHistoryPage, totalPages, sessions.length);
+  }
 }
 
+function buildPaginationHtml(cur, total, totalItems) {
+  let html = '';
+  html += '<span class="train-pagination-info">共'+totalItems+'条</span>';
+  html += '<button class="train-pagination-btn arrow" onclick="goTrainHistoryPage('+(cur-1)+')"'+ (cur<=1?' disabled':'') +'>◀</button>';
+  for (let i = 1; i <= total; i++) {
+    const isActive = i === cur;
+    // Show: first, last, current±2, and ellipsis
+    if (total <= 7 || i === 1 || i === total || Math.abs(i - cur) <= 1) {
+      html += '<button class="train-pagination-btn'+(isActive?' active':'')+'" onclick="goTrainHistoryPage('+i+')">'+i+'</button>';
+    } else if (i === 2 && cur > 4) {
+      html += '<span class="train-pagination-info">…</span>';
+    } else if (i === total - 1 && cur < total - 3) {
+      html += '<span class="train-pagination-info">…</span>';
+    }
+  }
+  html += '<button class="train-pagination-btn arrow" onclick="goTrainHistoryPage('+(cur+1)+')"'+ (cur>=total?' disabled':'') +'>▶</button>';
+  return html;
+}
+
+/* ========== TRAINING DETAIL VIEW ========== */
+function viewTrainDetail(idx) {
+  const s = trainHistoryAll[idx];
+  if (!s) return;
+
+  // Build exercise name lookup (include steps/scenario/questions for detail view)
+  const exNameMap = {};
+  trainingLevels.forEach(lv => {
+    lv.exercises.forEach(e => { exNameMap[e.key] = { name:e.name, icon:e.icon, type:e.type, instruction:e.instruction, scenario:e.scenario, questions:e.questions, steps:e.steps, postReflect:e.postReflect }; });
+  });
+  const exInfo = exNameMap[s.exercise_key] || { name:s.exercise_key, icon:'🎯', type:'timer', instruction:'', scenario:'' };
+
+  const d = new Date(s.ts);
+  const ts = d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日 '+
+    String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+
+  const typeLabel = { timer:'⏱️ 定时练习', reflect:'💭 反思练习', challenge:'🤝 亲子挑战' };
+  const typeName = typeLabel[s.exercise_type] || '🎯 训练';
+
+  var html = '';
+  html += '<div style="text-align:center;margin-bottom:16px;">';
+  html += '<div style="font-size:40px;margin-bottom:6px;">'+exInfo.icon+'</div>';
+  html += '<div style="font-size:17px;font-weight:700;">'+exInfo.name+'</div>';
+  html += '<div style="font-size:12px;color:var(--text-light);margin-top:4px;">'+typeName+'</div>';
+  html += '</div>';
+
+  html += '<div style="background:var(--bg);border-radius:12px;padding:12px;margin-bottom:12px;">';
+  html += '<div style="font-size:12px;color:var(--text-light);margin-bottom:4px;">🕐 完成时间</div>';
+  html += '<div style="font-size:14px;font-weight:500;">'+ts+'</div>';
+  html += '</div>';
+
+  if (s.exercise_type === 'timer' && s.duration_sec) {
+    const min = Math.floor(s.duration_sec / 60);
+    const sec = s.duration_sec % 60;
+    html += '<div style="background:var(--bg);border-radius:12px;padding:12px;margin-bottom:12px;">';
+    html += '<div style="font-size:12px;color:var(--text-light);margin-bottom:4px;">⏱️ 练习时长</div>';
+    html += '<div style="font-size:14px;font-weight:500;">'+min+'分'+sec+'秒</div>';
+    html += '</div>';
+  }
+
+  // Exercise content - type-specific
+  if (s.exercise_type === 'challenge' && exInfo.steps && exInfo.steps.length) {
+    html += '<div style="background:var(--bg);border-radius:12px;padding:12px;margin-bottom:12px;">';
+    html += '<div style="font-size:12px;color:var(--text-light);margin-bottom:6px;">📖 挑战步骤</div>';
+    exInfo.steps.forEach((st, i) => {
+      html += '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:4px;">';
+      html += '<span style="flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;text-align:center;line-height:20px;">'+(i+1)+'</span>';
+      html += '<span style="font-size:13px;line-height:1.6;">'+esc(st)+'</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+  } else if (s.exercise_type === 'reflect' && exInfo.scenario) {
+    html += '<div style="background:var(--bg);border-radius:12px;padding:12px;margin-bottom:12px;">';
+    html += '<div style="font-size:12px;color:var(--text-light);margin-bottom:4px;">📖 情景</div>';
+    html += '<div style="font-size:13px;line-height:1.7;">'+esc(exInfo.scenario).replace(/\n/g,'<br>')+'</div>';
+    html += '</div>';
+    if (exInfo.questions && exInfo.questions.length) {
+      html += '<div style="background:var(--bg);border-radius:12px;padding:12px;margin-bottom:12px;">';
+      html += '<div style="font-size:12px;color:var(--text-light);margin-bottom:8px;">💭 问题与回答</div>';
+      var ansArr = (s.answers && s.answers.length) ? s.answers : [];
+      exInfo.questions.forEach((q, i) => {
+        html += '<div style="margin-bottom:10px;">';
+        html += '<div style="font-size:13px;color:#333;font-weight:500;margin-bottom:3px;">'+(i+1)+'. '+esc(q)+'</div>';
+        if (ansArr[i]) {
+          html += '<div style="font-size:13px;color:#E84A3A;padding-left:14px;line-height:1.6;">'+esc(ansArr[i])+'</div>';
+        } else {
+          html += '<div style="font-size:12px;color:#BBB;padding-left:14px;font-style:italic;">（未作答）</div>';
+        }
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+    if (s.reflection_note && !ansArr.length) {
+      html += '<div style="background:#FFF9F6;border-radius:12px;padding:12px;border-left:3px solid var(--coral);margin-bottom:12px;">';
+      html += '<div style="font-size:12px;color:var(--coral);margin-bottom:4px;">💬 我的记录</div>';
+      html += '<div style="font-size:13px;line-height:1.7;">'+esc(s.reflection_note)+'</div>';
+      html += '</div>';
+    }
+  } else if (s.exercise_type === 'timer' && exInfo.instruction) {
+    html += '<div style="background:var(--bg);border-radius:12px;padding:12px;margin-bottom:12px;">';
+    html += '<div style="font-size:12px;color:var(--text-light);margin-bottom:4px;">📖 练习内容</div>';
+    html += '<div style="font-size:13px;line-height:1.7;">'+esc(exInfo.instruction)+'</div>';
+    html += '</div>';
+  }
+
+  if (s.reflection_note && s.exercise_type !== 'reflect') {
+    html += '<div style="background:#FFF9F6;border-radius:12px;padding:12px;border-left:3px solid var(--coral);margin-bottom:12px;">';
+    html += '<div style="font-size:12px;color:var(--coral);margin-bottom:4px;">💬 我的记录</div>';
+    html += '<div style="font-size:13px;line-height:1.7;">'+esc(s.reflection_note)+'</div>';
+    html += '</div>';
+  }
+
+  if (exInfo.postReflect) {
+    html += '<div style="background:#F0FAF0;border-radius:12px;padding:10px 12px;font-size:12px;color:#5A8A5A;line-height:1.6;">💡 '+esc(exInfo.postReflect)+'</div>';
+  }
+
+  document.getElementById('trainDetailBody').innerHTML = html;
+  document.getElementById('trainDetailOverlay').classList.add('active');
+}
+
+function closeTrainDetail() {
+  document.getElementById('trainDetailOverlay').classList.remove('active');
+}
+
+function closeTrainDetailIfOverlay(e) {
+  if (e.target === e.currentTarget) closeTrainDetail();
+}
+
+function goTrainHistoryPage(p) {
+  trainHistoryPage = p;
+  renderTrainHistoryPage();
+  // Scroll pagination bar into view
+  document.getElementById('trainPagination').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+let _visibilityWarned = false;
 document.addEventListener('visibilitychange', async () => {
-  if (guarding && document.visibilityState === 'visible' && !wakeLock) {
-    try { wakeLock = await navigator.wakeLock.request('screen'); } catch(e) {}
+  if (!guarding) return;
+
+  if (document.visibilityState === 'hidden') {
+    // 页面被切走/锁屏 → 录音暂停，提示用户
+    _visibilityWarned = true;
+    const ms = document.getElementById('monitorStatus');
+    if (ms) ms.textContent = '⚠️ 已暂停 — 回到本页面恢复监听';
+    const orb = document.getElementById('monitorOrb');
+    if (orb) orb.style.opacity = '0.4';
+    // 释放 Wake Lock（切走后没必要保持屏幕）
+    if (wakeLock) { wakeLock.release().catch(()=>{}); wakeLock = null; }
+  } else if (document.visibilityState === 'visible') {
+    // 用户回到页面 → 恢复一切
+    if (_visibilityWarned) {
+      _visibilityWarned = false;
+      const ms = document.getElementById('monitorStatus');
+      if (ms) ms.textContent = '🔄 正在恢复监听...';
+    }
+    // 重新申请 Wake Lock
+    if (!wakeLock) {
+      try { wakeLock = await navigator.wakeLock.request('screen'); } catch(e) {}
+    }
+    // 强制重启语义监测（clean-restart：先停再启）
+    if (typeof startSemanticPolling === 'function') {
+      startSemanticPolling();
+    }
+    // 恢复界面
+    const orb = document.getElementById('monitorOrb');
+    if (orb) orb.style.opacity = '1';
+    setTimeout(() => {
+      const ms = document.getElementById('monitorStatus');
+      if (ms && ms.textContent.indexOf('恢复') !== -1) ms.textContent = '正在倾听...';
+    }, 1500);
   }
 });
 </script>
