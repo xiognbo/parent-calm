@@ -10465,5 +10465,73 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/parent-calm/sw.js');
 }
 </script>
+<script>
+// ── 访问统计（零配置，自动计数）──
+(function(){
+  var NS = 'xiognbo-parent-calm';
+  var KEY_VISITS = 'visits';
+  var KEY_UNIQUE = 'unique';
+  var API = 'https://api.countapi.xyz';
+
+  // 总访问次数（每次页面加载 +1）
+  fetch(API + '/hit/' + NS + '/' + KEY_VISITS)
+    .then(function(r){ return r.json(); })
+    .then(function(d){ console.log('📊 累计访问:', d.value); })
+    .catch(function(){});
+
+  // 独立访客（仅首次访问 +1）
+  if (!localStorage.getItem('_pc_uv')) {
+    localStorage.setItem('_pc_uv', '1');
+    fetch(API + '/hit/' + NS + '/' + KEY_UNIQUE)
+      .then(function(r){ return r.json(); })
+      .then(function(d){ console.log('👤 累计用户:', d.value); })
+      .catch(function(){});
+  }
+
+  // 底部小角标，鼠标悬停查看
+  var el = document.createElement('div');
+  el.title = '点击查看访问统计';
+  el.style.cssText = 'position:fixed;bottom:12px;left:12px;z-index:9999;' +
+    'font-size:11px;color:rgba(150,150,150,0.6);cursor:pointer;' +
+    'padding:2px 8px;border-radius:10px;background:rgba(0,0,0,0.03);' +
+    'transition:all 0.3s;user-select:none;';
+  el.textContent = '📊';
+  el.onmouseenter = function(){
+    el.style.color = '#888';
+    el.style.background = 'rgba(0,0,0,0.06)';
+  };
+  el.onmouseleave = function(){
+    el.style.color = 'rgba(150,150,150,0.6)';
+    el.style.background = 'rgba(0,0,0,0.03)';
+  };
+  el.onclick = function(){
+    var w = window.open('', '_blank', '');
+    w.document.write(
+      '<div style="font-family:sans-serif;padding:30px;text-align:center;">' +
+      '<h2>📊 冷静家长 · 访问统计</h2>' +
+      '<p>加载中...</p></div>'
+    );
+    Promise.all([
+      fetch(API + '/get/' + NS + '/' + KEY_VISITS).then(function(r){return r.json();}),
+      fetch(API + '/get/' + NS + '/' + KEY_UNIQUE).then(function(r){return r.json();})
+    ]).then(function(arr){
+      w.document.body.innerHTML =
+        '<div style="font-family:-apple-system,sans-serif;padding:40px;text-align:center;">' +
+        '<h2>📊 冷静家长 · 访问统计</h2>' +
+        '<div style="display:flex;gap:40px;justify-content:center;margin:40px 0;">' +
+        '<div style="background:#f5f5f5;border-radius:16px;padding:30px 40px;">' +
+        '<div style="font-size:48px;font-weight:700;color:#FFB432;">' + (arr[0].value||0) + '</div>' +
+        '<div style="color:#999;margin-top:8px;">累计访问次数</div></div>' +
+        '<div style="background:#f5f5f5;border-radius:16px;padding:30px 40px;">' +
+        '<div style="font-size:48px;font-weight:700;color:#4CAF50;">' + (arr[1].value||0) + '</div>' +
+        '<div style="color:#999;margin-top:8px;">独立用户数</div></div>' +
+        '</div><p style="color:#bbb;font-size:13px;">数据实时更新 · 无需注册 · 隐私保护</p></div>';
+    }).catch(function(){
+      w.document.body.innerHTML = '<div style="text-align:center;padding:40px;"><p>加载失败，请稍后重试</p></div>';
+    });
+  };
+  document.body.appendChild(el);
+})();
+</script>
 </body>
 </html>
