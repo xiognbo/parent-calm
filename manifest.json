@@ -1,0 +1,19 @@
+{
+  "name": "冷静家长 — 被动守护自动提醒",
+  "short_name": "冷静家长",
+  "description": "帮助父母减少对孩子发火的工具，通过麦克风被动监测语音情绪",
+  "start_url": "/parent-calm/",
+  "scope": "/parent-calm/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFF8F3",
+  "theme_color": "#E8735A",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23E8735A%22/><text x=%2250%22 y=%2265%22 text-anchor=%22middle%22 font-size=%2250%22>🛡️</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
