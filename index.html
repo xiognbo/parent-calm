@@ -10466,27 +10466,13 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 <script>
-// ── 访问统计（零配置，自动计数）──
+// ── 访问统计 ──
 (function(){
-  var NS = 'xiognbo-parent-calm';
-  var KEY_VISITS = 'visits';
-  var KEY_UNIQUE = 'unique';
-  var API = 'https://api.countapi.xyz';
-
-  // 总访问次数（每次页面加载 +1）
-  fetch(API + '/hit/' + NS + '/' + KEY_VISITS)
-    .then(function(r){ return r.json(); })
-    .then(function(d){ console.log('📊 累计访问:', d.value); })
-    .catch(function(){});
-
-  // 独立访客（仅首次访问 +1）
-  if (!localStorage.getItem('_pc_uv')) {
-    localStorage.setItem('_pc_uv', '1');
-    fetch(API + '/hit/' + NS + '/' + KEY_UNIQUE)
-      .then(function(r){ return r.json(); })
-      .then(function(d){ console.log('👤 累计用户:', d.value); })
-      .catch(function(){});
-  }
+  // 本地统计（每人记录最近访问时间）
+  var now = Date.now();
+  var visits = parseInt(localStorage.getItem('_pc_visits') || '0') + 1;
+  localStorage.setItem('_pc_visits', visits);
+  localStorage.setItem('_pc_last_visit', now);
 
   // 底部小角标 — 仅 owner 可见（?debug=1）
   if (new URLSearchParams(location.search).get('debug') !== '1') return;
@@ -10506,30 +10492,23 @@ if ('serviceWorker' in navigator) {
     el.style.background = 'rgba(0,0,0,0.03)';
   };
   el.onclick = function(){
-    var w = window.open('', '_blank', '');
+    var w = window.open('', '_blank', 'width=420,height=520');
+    var lastVisit = new Date(parseInt(localStorage.getItem('_pc_last_visit')||now)).toLocaleString('zh-CN');
     w.document.write(
-      '<div style="font-family:sans-serif;padding:30px;text-align:center;">' +
-      '<h2>📊 冷静家长 · 访问统计</h2>' +
-      '<p>加载中...</p></div>'
+      '<div style="font-family:-apple-system,sans-serif;padding:40px 30px;text-align:center;max-width:380px;margin:0 auto;">' +
+      '<h2 style="color:#333;margin-bottom:24px;">冷静家长 · 访问统计</h2>' +
+      '<div style="background:#FFF8E1;border-radius:16px;padding:24px;margin-bottom:20px;">' +
+      '<div style="font-size:42px;font-weight:700;color:#FFB432;">' + visits + '</div>' +
+      '<div style="color:#999;margin-top:6px;font-size:14px;">本设备累计打开次数</div>' +
+      '<div style="color:#bbb;font-size:12px;margin-top:10px;">最近访问：' + lastVisit + '</div></div>' +
+      '<div style="background:#f5f5f5;border-radius:16px;padding:20px;margin-bottom:20px;">' +
+      '<p style="color:#666;font-size:13px;margin:0 0 12px;">查看所有用户的访问数据：</p>' +
+      '<a href="https://github.com/xiognbo/parent-calm/graphs/traffic" target="_blank" ' +
+      'style="display:inline-block;background:#2da44e;color:#fff;padding:10px 24px;border-radius:8px;' +
+      'text-decoration:none;font-size:14px;font-weight:600;">GitHub 流量统计</a>' +
+      '<p style="color:#aaa;font-size:11px;margin:10px 0 0;">独立访客 · 页面浏览量 · 来源渠道 · 每日趋势</p></div>' +
+      '<p style="color:#bbb;font-size:12px;">统计数据由 GitHub 官方提供 · 无需第三方服务</p></div>'
     );
-    Promise.all([
-      fetch(API + '/get/' + NS + '/' + KEY_VISITS).then(function(r){return r.json();}),
-      fetch(API + '/get/' + NS + '/' + KEY_UNIQUE).then(function(r){return r.json();})
-    ]).then(function(arr){
-      w.document.body.innerHTML =
-        '<div style="font-family:-apple-system,sans-serif;padding:40px;text-align:center;">' +
-        '<h2>📊 冷静家长 · 访问统计</h2>' +
-        '<div style="display:flex;gap:40px;justify-content:center;margin:40px 0;">' +
-        '<div style="background:#f5f5f5;border-radius:16px;padding:30px 40px;">' +
-        '<div style="font-size:48px;font-weight:700;color:#FFB432;">' + (arr[0].value||0) + '</div>' +
-        '<div style="color:#999;margin-top:8px;">累计访问次数</div></div>' +
-        '<div style="background:#f5f5f5;border-radius:16px;padding:30px 40px;">' +
-        '<div style="font-size:48px;font-weight:700;color:#4CAF50;">' + (arr[1].value||0) + '</div>' +
-        '<div style="color:#999;margin-top:8px;">独立用户数</div></div>' +
-        '</div><p style="color:#bbb;font-size:13px;">数据实时更新 · 无需注册 · 隐私保护</p></div>';
-    }).catch(function(){
-      w.document.body.innerHTML = '<div style="text-align:center;padding:40px;"><p>加载失败，请稍后重试</p></div>';
-    });
   };
   document.body.appendChild(el);
 })();
