@@ -10465,17 +10465,18 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/parent-calm/sw.js');
 }
 </script>
+<!-- 不蒜子访问统计（所有用户自动计数） -->
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 <script>
-// ── 访问统计 ──
+// ── 访问统计面板（仅 owner 可见 ?debug=1）──
 (function(){
-  // 本地统计（每人记录最近访问时间）
-  var now = Date.now();
+  // 本地计数
   var visits = parseInt(localStorage.getItem('_pc_visits') || '0') + 1;
   localStorage.setItem('_pc_visits', visits);
-  localStorage.setItem('_pc_last_visit', now);
+  localStorage.setItem('_pc_last_visit', Date.now());
 
-  // 底部小角标 — 仅 owner 可见（?debug=1）
   if (new URLSearchParams(location.search).get('debug') !== '1') return;
+
   var el = document.createElement('div');
   el.title = '点击查看访问统计';
   el.style.cssText = 'position:fixed;bottom:12px;left:12px;z-index:9999;' +
@@ -10492,23 +10493,40 @@ if ('serviceWorker' in navigator) {
     el.style.background = 'rgba(0,0,0,0.03)';
   };
   el.onclick = function(){
+    var uv = document.getElementById('busuanzi_value_site_uv');
+    var pv = document.getElementById('busuanzi_value_site_pv');
+    var uvText = uv ? uv.textContent : '加载中';
+    var pvText = pv ? pv.textContent : '加载中';
+    var lastVisit = new Date(parseInt(localStorage.getItem('_pc_last_visit')||Date.now())).toLocaleString('zh-CN');
     var w = window.open('', '_blank', 'width=420,height=520');
-    var lastVisit = new Date(parseInt(localStorage.getItem('_pc_last_visit')||now)).toLocaleString('zh-CN');
     w.document.write(
       '<div style="font-family:-apple-system,sans-serif;padding:40px 30px;text-align:center;max-width:380px;margin:0 auto;">' +
       '<h2 style="color:#333;margin-bottom:24px;">冷静家长 · 访问统计</h2>' +
-      '<div style="background:#FFF8E1;border-radius:16px;padding:24px;margin-bottom:20px;">' +
-      '<div style="font-size:42px;font-weight:700;color:#FFB432;">' + visits + '</div>' +
-      '<div style="color:#999;margin-top:6px;font-size:14px;">本设备累计打开次数</div>' +
-      '<div style="color:#bbb;font-size:12px;margin-top:10px;">最近访问：' + lastVisit + '</div></div>' +
+      '<div style="display:flex;gap:20px;justify-content:center;margin-bottom:20px;">' +
+      '<div style="background:#FFF8E1;border-radius:16px;padding:24px 30px;flex:1;">' +
+      '<div style="font-size:42px;font-weight:700;color:#FFB432;">' + uvText + '</div>' +
+      '<div style="color:#999;margin-top:6px;font-size:14px;">独立访客</div></div>' +
+      '<div style="background:#E8F5E9;border-radius:16px;padding:24px 30px;flex:1;">' +
+      '<div style="font-size:42px;font-weight:700;color:#4CAF50;">' + pvText + '</div>' +
+      '<div style="color:#999;margin-top:6px;font-size:14px;">总访问量</div></div>' +
+      '</div>' +
       '<div style="background:#f5f5f5;border-radius:16px;padding:20px;margin-bottom:20px;">' +
-      '<p style="color:#666;font-size:13px;margin:0 0 12px;">查看所有用户的访问数据：</p>' +
-      '<a href="https://github.com/xiognbo/parent-calm/graphs/traffic" target="_blank" ' +
-      'style="display:inline-block;background:#2da44e;color:#fff;padding:10px 24px;border-radius:8px;' +
-      'text-decoration:none;font-size:14px;font-weight:600;">GitHub 流量统计</a>' +
-      '<p style="color:#aaa;font-size:11px;margin:10px 0 0;">独立访客 · 页面浏览量 · 来源渠道 · 每日趋势</p></div>' +
-      '<p style="color:#bbb;font-size:12px;">统计数据由 GitHub 官方提供 · 无需第三方服务</p></div>'
+      '<div style="color:#666;font-size:13px;margin-bottom:8px;">本设备打开次数：' + visits + ' 次</div>' +
+      '<div style="color:#bbb;font-size:12px;">最近访问：' + lastVisit + '</div></div>' +
+      '<p style="color:#bbb;font-size:12px;">数据由不蒜子提供 · 自动统计所有访问用户</p></div>'
     );
+    // 如果还在加载，延迟刷新一次
+    if (uvText === '加载中') {
+      setTimeout(function(){
+        uv = document.getElementById('busuanzi_value_site_uv');
+        pv = document.getElementById('busuanzi_value_site_pv');
+        if (uv) {
+          var uvEl = w.document.querySelector('.color:#FFB432');
+          // 直接重写
+          w.location.reload();
+        }
+      }, 2000);
+    }
   };
   document.body.appendChild(el);
 })();
