@@ -10467,6 +10467,11 @@ if ('serviceWorker' in navigator) {
 </script>
 <!-- 不蒜子访问统计（所有用户自动计数） -->
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<!-- 不蒜子填充目标：隐藏，供弹窗读取 -->
+<div style="display:none;" aria-hidden="true">
+  <span id="busuanzi_value_site_uv"></span>
+  <span id="busuanzi_value_site_pv"></span>
+</div>
 <script>
 // ── 访问统计面板（仅 owner 可见 ?debug=1）──
 (function(){
@@ -10485,42 +10490,59 @@ if ('serviceWorker' in navigator) {
     'box-shadow:0 2px 10px rgba(255,180,50,0.5);user-select:none;' +
     'line-height:1;display:flex;align-items:center;gap:4px;';
   el.innerHTML = '📊 <span style="font-size:11px;">统计</span>';
-  el.onclick = function(){
+
+  function readBusuanzi() {
     var uv = document.getElementById('busuanzi_value_site_uv');
     var pv = document.getElementById('busuanzi_value_site_pv');
-    var uvText = uv ? uv.textContent : '加载中';
-    var pvText = pv ? pv.textContent : '加载中';
+    return {
+      uv: uv && uv.textContent ? uv.textContent : '加载中',
+      pv: pv && pv.textContent ? pv.textContent : '加载中'
+    };
+  }
+
+  function openStats() {
+    var data = readBusuanzi();
     var lastVisit = new Date(parseInt(localStorage.getItem('_pc_last_visit')||Date.now())).toLocaleString('zh-CN');
     var w = window.open('', '_blank', 'width=420,height=520');
-    w.document.write(
-      '<div style="font-family:-apple-system,sans-serif;padding:40px 30px;text-align:center;max-width:380px;margin:0 auto;">' +
-      '<h2 style="color:#333;margin-bottom:24px;">冷静家长 · 访问统计</h2>' +
-      '<div style="display:flex;gap:20px;justify-content:center;margin-bottom:20px;">' +
-      '<div style="background:#FFF8E1;border-radius:16px;padding:24px 30px;flex:1;">' +
-      '<div style="font-size:42px;font-weight:700;color:#FFB432;">' + uvText + '</div>' +
-      '<div style="color:#999;margin-top:6px;font-size:14px;">独立访客</div></div>' +
-      '<div style="background:#E8F5E9;border-radius:16px;padding:24px 30px;flex:1;">' +
-      '<div style="font-size:42px;font-weight:700;color:#4CAF50;">' + pvText + '</div>' +
-      '<div style="color:#999;margin-top:6px;font-size:14px;">总访问量</div></div>' +
+    var html =
+      '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>冷静家长 · 访问统计</title>' +
+      '<style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:0;padding:40px 20px;text-align:center;color:#333;background:#fafafa}' +
+      '.card{background:#fff;border-radius:16px;padding:24px 20px;box-shadow:0 2px 12px rgba(0,0,0,0.06);margin-bottom:16px}' +
+      '.number{font-size:42px;font-weight:700;margin-bottom:4px}' +
+      '.label{color:#999;font-size:14px}' +
+      '.grid{display:flex;gap:16px;justify-content:center;margin-bottom:20px}' +
+      '.grid .card{flex:1;max-width:160px}' +
+      '.orange{color:#FFB432}' +
+      '.green{color:#4CAF50}' +
+      '.muted{color:#bbb;font-size:12px}' +
+      '</style></head><body>' +
+      '<h2 style="margin:0 0 24px;color:#333;">冷静家长 · 访问统计</h2>' +
+      '<div class="grid">' +
+      '<div class="card"><div class="number orange" id="statUv">' + data.uv + '</div><div class="label">独立访客</div></div>' +
+      '<div class="card"><div class="number green" id="statPv">' + data.pv + '</div><div class="label">总访问量</div></div>' +
       '</div>' +
-      '<div style="background:#f5f5f5;border-radius:16px;padding:20px;margin-bottom:20px;">' +
-      '<div style="color:#666;font-size:13px;margin-bottom:8px;">本设备打开次数：' + visits + ' 次</div>' +
-      '<div style="color:#bbb;font-size:12px;">最近访问：' + lastVisit + '</div></div>' +
-      '<p style="color:#bbb;font-size:12px;">数据由不蒜子提供 · 自动统计所有访问用户</p></div>'
-    );
-    // 如果还在加载，延迟刷新一次
-    if (uvText === '加载中') {
+      '<div class="card" style="text-align:left;">' +
+      '<div style="color:#666;font-size:14px;margin-bottom:6px;">本设备打开次数：<strong>' + visits + '</strong> 次</div>' +
+      '<div class="muted">最近访问：' + lastVisit + '</div></div>' +
+      '<p class="muted">数据由不蒜子提供 · 自动统计所有访问用户</p>' +
+      '</body></html>';
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+
+    // 如果数字还在加载，1.5秒后从主页面重新读取并更新
+    if (data.uv === '加载中' || data.pv === '加载中') {
       setTimeout(function(){
-        uv = document.getElementById('busuanzi_value_site_uv');
-        pv = document.getElementById('busuanzi_value_site_pv');
-        if (uv) {
-          var uvEl = w.document.querySelector('.color:#FFB432');
-          // 直接重写
-          w.location.reload();
-        }
-      }, 2000);
+        var refreshed = readBusuanzi();
+        var uvEl = w.document.getElementById('statUv');
+        var pvEl = w.document.getElementById('statPv');
+        if (uvEl && refreshed.uv !== '加载中') uvEl.textContent = refreshed.uv;
+        if (pvEl && refreshed.pv !== '加载中') pvEl.textContent = refreshed.pv;
+      }, 1500);
     }
-  };
+  }
+
+  el.onclick = openStats;
   document.body.appendChild(el);
 })();
 </script>
